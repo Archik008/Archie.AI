@@ -7,7 +7,7 @@ from pyconfig import DEV_BOT_TOKEN
 import asyncio
 
 
-URL = "MY_URL_HERE"
+URL = "https://1093-91-198-101-239.ngrok-free.app"
 bot = Bot(DEV_BOT_TOKEN)
 my_router = Router()
 dp = Dispatcher()

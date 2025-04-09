@@ -72,7 +72,6 @@ class UserMethods:
             return
         
         cur_date = datetime.now().date()
-        print(cur_date, user.updated_at.date())
         
         if cur_date > user.updated_at.date():
             user.attempts = 5
