@@ -45,5 +45,13 @@ services:
       - main_app
       - admin
 
+  alembic:
+    build: .
+    depends_on:
+      - db
+    volumes:
+      - .:/app
+    command: ["alembic", "upgrade", "head"]
+
 volumes:
   pg_data:
