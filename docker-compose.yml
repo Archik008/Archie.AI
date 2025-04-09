@@ -1,0 +1,45 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: AsyncUserDb
+      POSTGRES_PASSWORD: somepassw189309
+      POSTGRES_DB: AsyncFastApi
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  main_app:
+    build: .
+    depends_on:
+      - db
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    command: ["python", "main.py"]
+
+  # alembic:
+  #   build: .
+  #   command: alembic upgrade head
+  #   depends_on:
+  #     - db
+  #   volumes:
+  #     - .:/app
+
+  admin:
+    build: .
+    depends_on:
+      - db
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/app
+    command: ["python", "panel.py"]
+
+volumes:
+  pg_data:
