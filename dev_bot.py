@@ -2,43 +2,27 @@ from aiogram import Router, Dispatcher, Bot, types
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo, Message, LabeledPrice
 from aiogram.filters import Command
 
-# from fastapi import FastAPI
-# from contextlib import asynccontextmanager
-
 from pyconfig import DEV_BOT_TOKEN
 
 import asyncio
 
 
-URL = "https://2408-91-198-101-239.ngrok-free.app"
+URL = "MY_URL_HERE"
 bot = Bot(DEV_BOT_TOKEN)
 my_router = Router()
 dp = Dispatcher()
 
 dp.include_router(my_router)
 
-# async def create_invoice_link_bot():
-#    payment_link = await bot.create_invoice_link(
-#        "Подписка",
-#        "Ежемесячная подписка 100 stars",
-#        "{}",
-#        "XTR",
-#        prices=[LabeledPrice(label="Подписка", amount=1)]
-#    )
-#    return payment_link
-
-# @asynccontextmanager
-# async def lifespan(app: FastAPI):
-#     url_webhook = f"{URL}/webhook"
-#     await bot.set_webhook(url=url_webhook,
-#                           allowed_updates=dp.resolve_used_update_types(),
-#                           drop_pending_updates=True)
-#     yield
-#     await bot.delete_webhook()
-
-# @my_router.pre_checkout_query(lambda query: True)
-# async def pre_checkout_query(pre_checkout_q: types.PreCheckoutQuery):
-#     await bot.answer_pre_checkout_query(pre_checkout_q.id, ok=True)
+async def create_invoice_link_bot():
+   payment_link = await bot.create_invoice_link(
+       "Подписка",
+       "Ежемесячная подписка 100 stars",
+       "{}",
+       "XTR",
+       prices=[LabeledPrice(label="Подписка", amount=1)]
+   )
+   return payment_link
 
 hello_user = """Приветствую тебя в проекте <b>Archie.AI</b>!
 Здесь ты можешь попробовать:

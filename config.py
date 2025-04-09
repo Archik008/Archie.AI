@@ -19,3 +19,5 @@ class Settings(BaseSettings):
 
         
 settings = Settings()
+
+print(settings.get_db_url())
