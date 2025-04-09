@@ -348,8 +348,8 @@ async def get_daily_verse(user_id: int = Depends(UserMethods.start_verifying), d
     return getting_daily_verse
 
 @app.get("/get_invoice")
-async def get_payment_invoice(user_id: int = Depends(UserMethods.start_verifying)):
-    invoice_link = await create_invoice_link_bot(user_id)
+async def get_payment_invoice():
+    invoice_link = await create_invoice_link_bot()
     return {"pay_link": invoice_link}
 
 @app.get("/in_whiteList")
