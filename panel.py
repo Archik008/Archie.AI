@@ -3,6 +3,7 @@ from sqladmin import Admin, ModelView
 from sqladmin.authentication import AuthenticationBackend
 from starlette.middleware.sessions import SessionMiddleware
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 import jwt, secrets, uvicorn
 
@@ -74,4 +75,4 @@ for cls in Base.__subclasses__():
         admin.add_view(DynamicAdmin)
 
 if __name__ == '__main__':
-    uvicorn.run(app, port=8080, host="0.0.0.0")
+    uvicorn.run(app, port=8080, host="0.0.0.0", proxy_headers=True, forwarded_allow_ips="*")
