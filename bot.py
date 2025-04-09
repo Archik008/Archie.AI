@@ -20,7 +20,7 @@ async def create_invoice_link_bot():
        "Ежемесячная подписка 100 stars",
        "{}",
        "XTR",
-       prices=[LabeledPrice(label="Подписка", amount=1)]
+       prices=[LabeledPrice(label="Подписка", amount=100)]
    )
    return payment_link
 
