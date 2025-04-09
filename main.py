@@ -31,7 +31,10 @@ from bot import bot, dp, lifespan
 
 import asyncio
 
-app = FastAPI(lifespan=lifespan)
+app = FastAPI(lifespan=lifespan,
+              docs_url=None,
+              redoc_url=None,
+              openapi_url=None)
 # app = FastAPI()
 
 app.add_middleware(
