@@ -2,8 +2,6 @@ from fastapi import FastAPI, Request
 from sqladmin import Admin, ModelView
 from sqladmin.authentication import AuthenticationBackend
 from starlette.middleware.sessions import SessionMiddleware
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 
 import jwt, secrets, uvicorn
 
@@ -53,13 +51,6 @@ class AdminAuth(AuthenticationBackend):
 
 app = FastAPI()
 app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY)  # Добавляем поддержку сессий
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[URL],  # Разрешить только HTTPS-ссылки
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 auth_backend = AdminAuth(SECRET_KEY)
 admin = Admin(app, engine, authentication_backend=auth_backend)
