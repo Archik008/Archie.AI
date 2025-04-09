@@ -17,29 +17,33 @@ services:
     build: .
     depends_on:
       - db
-    ports:
-      - "8000:8000"
+    expose:
+      - "8000"
     volumes:
       - .:/app
     command: ["python", "main.py"]
-
-  # alembic:
-  #   build: .
-  #   command: alembic upgrade head
-  #   depends_on:
-  #     - db
-  #   volumes:
-  #     - .:/app
 
   admin:
     build: .
     depends_on:
       - db
-    ports:
-      - "8080:8080"
+    expose:
+      - "8080"
     volumes:
       - .:/app
     command: ["python", "panel.py"]
+
+  nginx:
+    image: nginx:latest
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+      - /etc/letsencrypt:/etc/letsencrypt:ro 
+    depends_on:
+      - main_app
+      - admin
 
 volumes:
   pg_data:
