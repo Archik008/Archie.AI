@@ -137,7 +137,10 @@ class UserMethods:
 
         for quiz_question, answers in quiz_questions.items():
             question = Question(question=quiz_question, quiz_id=new_quiz.id)
+            passed_question = PassedQuestions(userId=userId, question_name=quiz_question)
             db.add(question)
+            db.add(passed_question)
+
             await db.flush()
 
             if not dict_question_answers:
@@ -298,6 +301,7 @@ class UserMethods:
             await db.flush()
         else:
             return {"has_seen": True}
+        
 
         await db.commit()
 

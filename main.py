@@ -1,6 +1,8 @@
 from fastapi import FastAPI, Depends, HTTPException
-
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.encoders import jsonable_encoder
+from openai import RateLimitError
 
 from sqlalchemy import select, update, delete, and_
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -44,6 +46,21 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+class InfoUserException(HTTPException):
+    def __init__(self, status_code, detail, title):
+        super().__init__(status_code, detail)
+        self.title = title
+
+class InfoUserModel(BaseModel):
+    status_code: int
+    title: str
+    detail: str
+
+@app.exception_handler(InfoUserException)
+async def wrap_info_user_exc(request, exc: InfoUserException):
+    exception = jsonable_encoder(InfoUserModel(status_code=exc.status_code, title=exc.title, detail=exc.detail))
+    return JSONResponse(status_code=exc.status_code, content=exception)
 
 @app.post("/verify")
 async def verifying(params: VerifyingUrl):
@@ -156,7 +173,13 @@ async def set_chat_title(chat_id: int, user_msg: str, userId: int = Depends(User
         raise HTTPException(404)
     
     if not result.title:
-        chat_title = BibleChatAi.setTitleChat(user_msg)
+        try:
+            chat_title = BibleChatAi.setTitleChat(user_msg)
+        except RateLimitError:
+            raise InfoUserException(status_code=500, detail="Превышен лимит запросов или закончилась квота.", title="Лимит запросов")
+        except Exception as e:
+            raise InfoUserException(status_code=501, detail=f"Неизвестная ошибка: {e}. Отправь скриншот ошибки в наш телеграм чат", title="Неизвестная ошибка")
+
         result.title = chat_title
 
         await db.commit()
@@ -184,7 +207,12 @@ async def getBotMsg(chat_id: int, userId: int = Depends(UserMethods.start_verify
     username_search = await db.execute(select(User.userName).filter(User.id == userId))
     username = username_search.scalar_one()
 
-    bot_msg_text = BibleChatAi.askBibleChat(last_msg.text, context_msgs, username)
+    try:
+        bot_msg_text = BibleChatAi.askBibleChat(last_msg.text, context_msgs, username)
+    except RateLimitError:
+        raise InfoUserException(status_code=500, detail="Превышен лимит запросов или закончилась квота.", title="Лимит запросов")
+    except Exception as e:
+        raise InfoUserException(status_code=501, detail=f"Неизвестная ошибка: {e}. Отправь скриншот ошибки в наш телеграм чат", title="Неизвестная ошибка")
 
     msg = Message(userId=userId, chatId=chat_id, text=bot_msg_text, 
                 is_bot=True)
@@ -236,7 +264,7 @@ async def deletingChatsMsg(userId: int = Depends(UserMethods.start_verifying), d
 
 @app.get("/topics")
 async def get_topics(user: int = Depends(UserMethods.start_verifying), db: AsyncSession = Depends(get_db)):
-    if not (await UserMethods.is_premium(user, db) or await UserMethods.allow_not_premium_using(user, db)):
+    if not await UserMethods.is_user_exists(user, db):
         raise HTTPException(403, "not allowed")
     return {"topics": AI_TEST_TOPICS}
 
@@ -249,12 +277,18 @@ async def create_quiz(params: PostQuiz, user: int = Depends(UserMethods.start_ve
     if not is_exists:
         raise HTTPException(404)
     
+    try:
+        new_quiz = await UserMethods.make_quiz(user, params.topic, db)
+    except RateLimitError:
+        raise InfoUserException(status_code=500, detail="Превышен лимит запросов или закончилась квота.", title="Лимит запросов")
+    except Exception as e:
+        raise InfoUserException(status_code=501, detail=f"Неизвестная ошибка: {e}. Отправь скриншот ошибки в наш телеграм чат", title="Неизвестная ошибка")
+    
     is_subscribed  = await UserMethods.is_subscribed(user, db)
     if not user in WHITE_LIST and not is_subscribed:
         await UserMethods.update_user_attempts(user, db)
         await UserMethods.minus_attempts(user, db)
-    
-    new_quiz = await UserMethods.make_quiz(user, params.topic, db)
+
     return new_quiz
 
 @app.get("/quiz")
@@ -265,7 +299,6 @@ async def get_quiz(quiz_id: int, user: int = Depends(UserMethods.start_verifying
 @app.post("/answer")
 async def answer_question(params: AnswerQuestionClass, user: int = Depends(UserMethods.start_verifying), db: AsyncSession = Depends(get_db)):
     correct_answers = await UserMethods.answer_question_db(user, params, db)
-
     return correct_answers
 
 @app.get("/next_question")
@@ -282,16 +315,6 @@ async def get_next_question(quiz_id: int, user: int = Depends(UserMethods.start_
         user_result.passed_quizes += 1
 
         await db.flush()
-
-        questions_quiz_s = await db.execute(select(Question.question).filter(Question.quiz.has(Quiz.userId == user)))
-        total_questions = questions_quiz_s.scalars().all()
-
-        for question in total_questions:
-            passed_q_model = PassedQuestions(
-                userId=user,
-                question_name=question
-            )
-            db.add(passed_q_model)
 
         await db.execute(delete(Quiz).filter(Quiz.userId == user, Quiz.id == quiz_id))
 
@@ -347,7 +370,12 @@ async def delete_quiz(quiz_id: int, user_id: int = Depends(UserMethods.start_ver
     
 @app.get("/daily_verse")
 async def get_daily_verse(user_id: int = Depends(UserMethods.start_verifying), db: AsyncSession = Depends(get_db)):
-    getting_daily_verse = await UserMethods.get_new_daily_verse(user_id, db)
+    try:
+        getting_daily_verse = await UserMethods.get_new_daily_verse(user_id, db)
+    except RateLimitError:
+        raise InfoUserException(status_code=500, detail="Превышен лимит запросов или закончилась квота.", title="Лимит запросов")
+    except Exception as e:
+        raise InfoUserException(status_code=501, detail=f"Неизвестная ошибка: {e}. Отправь скриншот ошибки в наш телеграм чат", title="Неизвестная ошибка")
     return getting_daily_verse
 
 @app.get("/get_invoice")
