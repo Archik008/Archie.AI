@@ -41,7 +41,7 @@ app = FastAPI(lifespan=lifespan,
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://4b46-91-198-101-239.ngrok-free.app"],  # URL вашего фронтенда
+    allow_origins=[URL],  # URL вашего фронтенда
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
