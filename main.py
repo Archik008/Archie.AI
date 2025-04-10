@@ -25,19 +25,19 @@ from bot import create_invoice_link_bot
 from starlette.requests import Request
 from fastapi.staticfiles import StaticFiles
 
-# import os
-# import uvicorn
+import os
+import uvicorn
 
-# from aiogram.types import Update
-# from bot import bot, dp, lifespan
+from aiogram.types import Update
+from bot import bot, dp, lifespan
 
-# import asyncio
+import asyncio
 
-# app = FastAPI(lifespan=lifespan,
-#               docs_url=None,
-#               redoc_url=None,
-#               openapi_url=None)
-app = FastAPI()
+app = FastAPI(lifespan=lifespan,
+              docs_url=None,
+              redoc_url=None,
+              openapi_url=None)
+# app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
@@ -389,41 +389,41 @@ async def is_user_in_whitelist(user_id: int = Depends(UserMethods.start_verifyin
         return {"status": True}
     return {"status": False}
 
-# class TechSupportModel(BaseModel):
-#     user_text: str
+class TechSupportModel(BaseModel):
+    user_text: str
 
-# report = """<b>Новая заявка</b>
-# <i>Юзер айди</i>: <a href="tg:openmessage?user_id=%s">%s</a>
-# <i>Текст заявки</i>:
-# "%s"
-# """
+report = """<b>Новая заявка</b>
+<i>Юзер айди</i>: <a href="tg:openmessage?user_id=%s">%s</a>
+<i>Текст заявки</i>:
+"%s"
+"""
 
-# @app.post('/support')
-# async def forward_to_support(params: TechSupportModel, user: int = Depends(UserMethods.start_verifying)):
-#     tasks = [bot.send_message(admin, report % (user, user, params.user_text), parse_mode="HTML") for admin in ADMINS_LIST]
-#     await asyncio.gather(*tasks)
-#     return {"ok": True}
+@app.post('/support')
+async def forward_to_support(params: TechSupportModel, user: int = Depends(UserMethods.start_verifying)):
+    tasks = [bot.send_message(admin, report % (user, user, params.user_text), parse_mode="HTML") for admin in ADMINS_LIST]
+    await asyncio.gather(*tasks)
+    return {"ok": True}
 
-# @app.post("/webhook")
-# async def webhook(request: Request, db: AsyncSession = Depends(get_db)) -> None:
-#     new_update_msg = await request.json()
-#     successful_payment = new_update_msg.get("message", {}).get("successful_payment")
-#     if successful_payment:
-#         user_id = new_update_msg.get("message", {}).get("from", {}).get("id")
-#         await UserMethods.subscribe_db(user_id, db)
-#     update = Update.model_validate(new_update_msg, context={"bot": bot})
-#     await dp.feed_update(bot, update)
+@app.post("/webhook")
+async def webhook(request: Request, db: AsyncSession = Depends(get_db)) -> None:
+    new_update_msg = await request.json()
+    successful_payment = new_update_msg.get("message", {}).get("successful_payment")
+    if successful_payment:
+        user_id = new_update_msg.get("message", {}).get("from", {}).get("id")
+        await UserMethods.subscribe_db(user_id, db)
+    update = Update.model_validate(new_update_msg, context={"bot": bot})
+    await dp.feed_update(bot, update)
 
-# frontend_dist = os.path.join(os.path.dirname(__file__), 'dist')
-# frontend_dist = os.path.abspath(frontend_dist)
+frontend_dist = os.path.join(os.path.dirname(__file__), 'dist')
+frontend_dist = os.path.abspath(frontend_dist)
 
-# app.mount("/assets", StaticFiles(directory=os.path.join(frontend_dist, 'assets')), name="assets")
-# app.mount("/css", StaticFiles(directory=os.path.join(frontend_dist, 'css')), name="css")
-# app.mount("/js", StaticFiles(directory=os.path.join(frontend_dist, 'js')), name="js")
+app.mount("/assets", StaticFiles(directory=os.path.join(frontend_dist, 'assets')), name="assets")
+app.mount("/css", StaticFiles(directory=os.path.join(frontend_dist, 'css')), name="css")
+app.mount("/js", StaticFiles(directory=os.path.join(frontend_dist, 'js')), name="js")
     
-# @app.get("/{full_path:path}")
-# async def serve_vue_app(full_path: str):
-#     return FileResponse(os.path.join(frontend_dist, "index.html"))
+@app.get("/{full_path:path}")
+async def serve_vue_app(full_path: str):
+    return FileResponse(os.path.join(frontend_dist, "index.html"))
 
-# if __name__ == "__main__":
-#     uvicorn.run(app, host="0.0.0.0", port=8000)
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000)
