@@ -64,4 +64,4 @@ async def answerWebApp(msg: Message):
 
 @my_router.message(Command("test"))
 async def answerSupport(msg: Message):
-    await msg.answer(report % 7413826637, "Тестовая заявка", parse_mode="HTML")
+    await msg.answer(report % (7413826637, "Тестовая заявка"), parse_mode="HTML")
