@@ -393,14 +393,14 @@ class TechSupportModel(BaseModel):
     user_text: str
 
 report = """<b>Новая заявка</b>
-<i>Юзер айди</i>: <a href="tg:openmessage?user_id=%s">%s</a>
+<a href="tg://user?id=%s">Юзер айди</a>
 <i>Текст заявки</i>:
 "%s"
 """
 
 @app.post('/support')
 async def forward_to_support(params: TechSupportModel, user: int = Depends(UserMethods.start_verifying)):
-    tasks = [bot.send_message(admin, report % (user, user, params.user_text), parse_mode="HTML") for admin in ADMINS_LIST]
+    tasks = [bot.send_message(admin, report % (user, params.user_text), parse_mode="HTML") for admin in ADMINS_LIST]
     await asyncio.gather(*tasks)
     return {"ok": True}
 

@@ -12,6 +12,8 @@ from schemas import AnswerQuestionClass
 
 from datetime import timedelta
 
+from pyconfig import BANNED_USERS
+
 import random
 
 class UserMethods:
@@ -22,7 +24,7 @@ class UserMethods:
                 
         is_valid, userId = is_safe(init_data)
         
-        if is_valid:
+        if is_valid and userId not in BANNED_USERS:
             return {"userId": userId, "status": "valid"}
         
         return {"status": "invalid"}

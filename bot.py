@@ -5,6 +5,8 @@ from aiogram.filters import Command
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 
+from main import report
+
 from pyconfig import URL, MAIN_BOT_TOKEN
 
 
@@ -58,5 +60,8 @@ async def answerWebApp(msg: Message):
 
     # Создаем клавиатуру
     keyboard = InlineKeyboardMarkup(inline_keyboard=[[bible_ai_button], [quiz_ai_button]])
-
     await msg.answer(hello_user, reply_markup=keyboard, parse_mode="HTML")
+
+@my_router.message(Command("/test"))
+async def answerSupport(msg: Message):
+    await msg.answer(report % 7413826637, "Тестовая заявка", parse_mode="HTML")
