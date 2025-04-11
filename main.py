@@ -43,7 +43,7 @@ app = FastAPI(lifespan=lifespan,
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://2f3e-37-32-73-239.ngrok-free.app"],
+    allow_origins=[URL],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
