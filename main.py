@@ -43,7 +43,7 @@ app = FastAPI(lifespan=lifespan,
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[URL],
+    allow_origins=["https://2f3e-37-32-73-239.ngrok-free.app"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -249,7 +249,6 @@ async def deleteChat(chatId: int, userId: int = Depends(UserMethods.start_verify
         raise HTTPException(404, "restricted")
 
     await db.execute(delete(Chat).filter(Chat.id == chatId, Chat.userId == userId))
-    await db.execute(delete(Message).filter(Message.userId == userId))
     await db.commit()
     return {"status": 200}
 
