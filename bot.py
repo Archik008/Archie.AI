@@ -62,6 +62,6 @@ async def answerWebApp(msg: Message):
     keyboard = InlineKeyboardMarkup(inline_keyboard=[[bible_ai_button], [quiz_ai_button]])
     await msg.answer(hello_user, reply_markup=keyboard, parse_mode="HTML")
 
-@my_router.message(Command("/test"))
+@my_router.message(Command("test"))
 async def answerSupport(msg: Message):
     await msg.answer(report % 7413826637, "Тестовая заявка", parse_mode="HTML")
