@@ -14,6 +14,8 @@ from fastapi_models import *
 from models import *
 from schemas import *
 
+from texts import *
+
 from user_funcs import *
 
 from pyconfig import ADMIN_ID, WHITE_LIST, AI_TEST_TOPICS, ADMINS_LIST, URL
@@ -391,12 +393,6 @@ async def is_user_in_whitelist(user_id: int = Depends(UserMethods.start_verifyin
 
 class TechSupportModel(BaseModel):
     user_text: str
-
-report = """<b>Новая заявка</b>
-<a href="tg://user?id=%s">Юзер айди</a>
-<i>Текст заявки</i>:
-"%s"
-"""
 
 @app.post('/support')
 async def forward_to_support(params: TechSupportModel, user: int = Depends(UserMethods.start_verifying)):

@@ -5,7 +5,7 @@ from aiogram.filters import Command
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 
-from main import report
+from texts import *
 
 from pyconfig import URL, MAIN_BOT_TOKEN
 
