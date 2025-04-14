@@ -219,4 +219,3 @@ class QuizAi:
 if __name__ == '__main__':
     input = "Привет, расскажи мне подробно как мне преодолеть страх"
     # print(QuizAi.makeQuizAi(6, "Новый Завет", ["В каком городе родился Иисус?"]))
-    print(BibleChatAi.askBibleChat(input, [], 'Артем'))
