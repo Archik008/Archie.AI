@@ -395,7 +395,7 @@ class TechSupportModel(BaseModel):
 
 @app.post('/support')
 async def forward_to_support(params: TechSupportModel, user: int = Depends(UserMethods.start_verifying)):
-    tasks = [bot.send_message(admin, report % (user, params.user_text), parse_mode="HTML") for admin in ADMINS_LIST]
+    tasks = [bot.send_message(admin, report % (user, user, params.user_text), parse_mode="HTML") for admin in ADMINS_LIST]
     await asyncio.gather(*tasks)
     return {"ok": True}
 

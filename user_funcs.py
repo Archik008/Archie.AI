@@ -117,7 +117,7 @@ class UserMethods:
 
         questions_search = await db.execute(select(PassedQuestions.question_name).filter(PassedQuestions.userId == userId))
         results_questions = questions_search.scalars().all()
-        results_questions = "\n".join(["- " + question_db for question_db in results_questions])
+        results_questions = "\n".join([f"""     -{question_db}"""  for question_db in results_questions])
 
         quiz_title, questions_answers = QuizAi.makeQuizAi(my_points, topic, results_questions)
 
