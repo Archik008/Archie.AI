@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.encoders import jsonable_encoder
@@ -18,7 +18,7 @@ from texts import *
 
 from user_funcs import *
 
-from pyconfig import ADMIN_ID, WHITE_LIST, AI_TEST_TOPICS, ADMINS_LIST, URL
+from pyconfig import ADMIN_ID, WHITE_LIST, AI_TEST_TOPICS, ADMINS_LIST, URL, PASSWORD
 
 from ai import BibleChatAi
 
@@ -168,6 +168,8 @@ async def sendMsg(msg_data: NewMessage, userId: int = Depends(UserMethods.start_
 
 @app.get("/chat")
 async def set_chat_title(chat_id: int, user_msg: str, userId: int = Depends(UserMethods.start_verifying), db: AsyncSession = Depends(get_db)):
+    if not await UserMethods.is_subscribed(userId, db):
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "пользователь не подписан!")
     chat_search = await db.execute(select(Chat).filter(Chat.userId == userId, Chat.id == chat_id))
     result = chat_search.scalar_one_or_none()
 
@@ -189,7 +191,7 @@ async def set_chat_title(chat_id: int, user_msg: str, userId: int = Depends(User
     return result
 
 @app.get("/botMsg")
-async def getBotMsg(chat_id: int, userId: int = Depends(UserMethods.start_verifying), db: AsyncSession = Depends(get_db)):
+async def getBotMsg(chat_id: int, msg_id: int, userId: int = Depends(UserMethods.start_verifying), db: AsyncSession = Depends(get_db)):
     last_msg = await UserMethods.get_last_msg(userId, chat_id, db)
 
     if not last_msg or last_msg.is_bot:
@@ -255,7 +257,7 @@ async def deleteChat(chatId: int, userId: int = Depends(UserMethods.start_verify
 @app.delete("/clearMsgs")
 async def deletingChatsMsg(userId: int = Depends(UserMethods.start_verifying), db: AsyncSession = Depends(get_db)):
     if await UserMethods.is_premium(userId, db) or userId in WHITE_LIST:
-        return {"status": "Our person!;("}
+        raise HTTPException(status.HTTP_406_NOT_ACCEPTABLE, "subscribers not allowed to clear!")
 
     await db.execute(delete(Chat).filter(Chat.userId == userId))
     await db.execute(delete(Message).filter(Message.userId == userId))
@@ -389,6 +391,17 @@ async def is_user_in_whitelist(user_id: int = Depends(UserMethods.start_verifyin
     if user_id in WHITE_LIST:
         return {"status": True}
     return {"status": False}
+
+class BanUserClass(BaseModel):
+    password: str
+    list_users: list
+
+@app.post("/ban")
+async def ban_user(params: BanUserClass, db: AsyncSession = Depends(get_db)):
+    if params.password != PASSWORD:
+        raise HTTPException(status_code=status.HTTP_418_IM_A_TEAPOT, detail="Доступ запрещен!!")
+    await UserMethods.add_banned_users(params.list_users, db)
+    return {"ok": True}
 
 class TechSupportModel(BaseModel):
     user_text: str

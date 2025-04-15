@@ -1,7 +1,7 @@
 from sqlalchemy import select, update, and_
 from sqlalchemy.orm import selectinload
 from database import get_db
-from fastapi import Depends, HTTPException, Header
+from fastapi import Depends, HTTPException, Header, status
 from models import *
 from pyconfig import WHITE_LIST
 from ai import QuizAi, BibleChatAi
@@ -12,22 +12,39 @@ from schemas import AnswerQuestionClass
 
 from datetime import timedelta
 
-from pyconfig import BANNED_USERS
-
 import random
 
 class UserMethods:
 
-    async def verifyUser(init_data: str):
+    async def verifyUser(init_data: str, db: AsyncSession):
         if not init_data:
             return {"status": "missing"}
-                
+                        
         is_valid, userId = is_safe(init_data)
-        
-        if is_valid and userId not in BANNED_USERS:
+
+        if is_valid and not await UserMethods.search_banned_user(userId, db):
             return {"userId": userId, "status": "valid"}
         
         return {"status": "invalid"}
+    
+    async def search_banned_user(userId, db: AsyncSession):
+        search_user = await db.execute(select(BannedUser).filter(BannedUser.userId == userId))
+        user = search_user.scalar_one_or_none()
+
+        if not user: 
+            return
+        
+        return True
+    
+    async def add_banned_users(userIds: list, db: AsyncSession):
+        for userId in userIds:
+            cur_user = await UserMethods.search_banned_user(userId, db)
+            if not cur_user:
+                new_banned_user = BannedUser(userId=userId)
+                db.add(new_banned_user)
+                await db.flush()
+        else:
+            await db.commit()
 
     async def is_user_exists(userId: int, db: AsyncSession):
         user = await db.execute(select(User).where(User.id == userId))
@@ -70,9 +87,6 @@ class UserMethods:
         if not user:
             raise HTTPException(404)
         
-        if user.attempts > 0:
-            return
-        
         cur_date = datetime.now().date()
         
         if cur_date > user.updated_at.date():
@@ -101,10 +115,10 @@ class UserMethods:
         await db.commit()
 
     async def start_verifying(init_data: str = Header(...), db: AsyncSession = Depends(get_db)):
-        result_verify = await UserMethods.verifyUser(init_data)
+        result_verify = await UserMethods.verifyUser(init_data, db)
 
         if result_verify['status'] == 'invalid':
-            raise HTTPException(401, "Not allowed. God bless you!")
+            raise HTTPException(status.HTTP_406_NOT_ACCEPTABLE, "Not allowed. God bless you!")
         elif result_verify['status'] == 'missing':
             raise HTTPException(404, "Missing important data! >:(")
         
@@ -198,9 +212,11 @@ class UserMethods:
     async def get_last_msg(userId, chatId, db: AsyncSession):
         user_msg_search = await db.execute(select(Message).filter(Message.userId == userId, Message.chatId == chatId))
         result_msg = user_msg_search.scalars().all()
-        if len(result_msg) == 0:
+        result_msgs = list(result_msg)
+        result_msgs.sort(key=lambda msg: msg.id)
+        if len(result_msgs) == 0:
             return
-        return result_msg[-1]
+        return result_msgs[-1]
 
 
     async def get_question_answers_unanswered(userId, quizId, db: AsyncSession):

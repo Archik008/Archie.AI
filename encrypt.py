@@ -18,6 +18,8 @@ def is_safe(init_data: str) -> bool:
 
         if result_verify:
             return result_verify, user_value
+        
+    return None, None
 
 
 def convert_init_data(init_data: str):

@@ -33,17 +33,17 @@ services:
       - .:/app
     command: ["python", "panel.py"]
 
-  nginx:
-    image: nginx:latest
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
-      - /etc/letsencrypt:/etc/letsencrypt:ro 
-    depends_on:
-      - main_app
-      - admin
+  # nginx:
+  #   image: nginx:latest
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   volumes:
+  #     - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+  #     - /etc/letsencrypt:/etc/letsencrypt:ro 
+  #   depends_on:
+  #     - main_app
+  #     - admin
 
   alembic:
     build: .
@@ -51,7 +51,6 @@ services:
       - db
     volumes:
       - .:/app
-    command: ["alembic", "upgrade", "head"]
 
 volumes:
   pg_data:

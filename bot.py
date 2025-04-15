@@ -7,7 +7,9 @@ from contextlib import asynccontextmanager
 
 from texts import *
 
-from pyconfig import URL, MAIN_BOT_TOKEN
+import httpx
+
+from pyconfig import URL, MAIN_BOT_TOKEN, ADMINS_LIST, PASSWORD
 
 
 bot = Bot(MAIN_BOT_TOKEN)
@@ -61,3 +63,18 @@ async def answerWebApp(msg: Message):
     # Создаем клавиатуру
     keyboard = InlineKeyboardMarkup(inline_keyboard=[[bible_ai_button], [quiz_ai_button]])
     await msg.answer(hello_user, reply_markup=keyboard, parse_mode="HTML")
+
+@my_router.message(Command("ban"))
+async def ban_user(msg: Message):
+    if not msg.from_user.id in ADMINS_LIST:
+        return
+    
+    list_banned_users = [int(id) for id in msg.text.removeprefix("/ban ").split()]
+    
+    async with httpx.AsyncClient() as client:
+        data = {
+            "password": PASSWORD,
+            "list_users": list_banned_users
+        }
+        response = await client.post(f"http://localhost:8000/ban", json=data)
+        await msg.answer(f"Ответ от бэкенда:\n\n{response.json()}")

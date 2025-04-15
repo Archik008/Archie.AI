@@ -45,6 +45,12 @@ class User(Base):
         back_populates="user",
         cascade="all, delete-orphan"
     )
+    banned: Mapped["BannedUser"] = relationship(
+        "BannedUser",
+        back_populates="user",
+        cascade="all, delete-orphan",
+        uselist=False
+    )
 
 class Chat(Base):
     __tablename__ = "chats"
@@ -134,3 +140,10 @@ class PassedQuestions(Base):
     userId: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
 
     user: Mapped["User"] = relationship("User", back_populates="passed_questions")
+
+class BannedUser(Base):
+    __tablename__ = "banned_users"
+
+    userId: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+
+    user: Mapped["User"] = relationship("User", back_populates="banned")
