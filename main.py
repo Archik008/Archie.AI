@@ -191,7 +191,7 @@ async def set_chat_title(chat_id: int, user_msg: str, userId: int = Depends(User
     return result
 
 @app.get("/botMsg")
-async def getBotMsg(chat_id: int, msg_id: int, userId: int = Depends(UserMethods.start_verifying), db: AsyncSession = Depends(get_db)):
+async def getBotMsg(chat_id: int, userId: int = Depends(UserMethods.start_verifying), db: AsyncSession = Depends(get_db)):
     last_msg = await UserMethods.get_last_msg(userId, chat_id, db)
 
     if not last_msg or last_msg.is_bot:
