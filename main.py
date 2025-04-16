@@ -125,7 +125,7 @@ async def getMessages(chat_id: int, userId: int = Depends(UserMethods.start_veri
 
 @app.get("/chats")
 async def getChats(userId: int = Depends(UserMethods.start_verifying), db: AsyncSession = Depends(get_db)):
-    if not await UserMethods.is_premium(userId, db) and userId not in WHITE_LIST:
+    if not await UserMethods.is_subscribed(userId, db) and userId not in WHITE_LIST:
         return []
 
     chats = await db.execute(select(Chat).where(Chat.userId == userId))
