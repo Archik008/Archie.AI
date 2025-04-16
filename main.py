@@ -24,30 +24,30 @@ from ai import BibleChatAi
 
 from bot import create_invoice_link_bot
 
-from starlette.requests import Request
-from fastapi.staticfiles import StaticFiles
+# from starlette.requests import Request
+# from fastapi.staticfiles import StaticFiles
 
-import os
-import uvicorn
+# import os
+# import uvicorn
 
-from aiogram.types import Update
-from bot import bot, dp, lifespan
+# from aiogram.types import Update
+# from bot import bot, dp, lifespan
 
-import asyncio
+# import asyncio
 
-app = FastAPI(lifespan=lifespan,
-              docs_url=None,
-              redoc_url=None,
-              openapi_url=None)
-# app = FastAPI()
+# app = FastAPI(lifespan=lifespan,
+#               docs_url=None,
+#               redoc_url=None,
+#               openapi_url=None)
+app = FastAPI()
 
-# app.add_middleware(
-#     CORSMiddleware,
-#     allow_origins=["https://0150-37-32-73-239.ngrok-free.app"],
-#     allow_credentials=True,
-#     allow_methods=["*"],
-#     allow_headers=["*"],
-# )
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["https://b116-37-32-73-239.ngrok-free.app"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 class InfoUserException(HTTPException):
     def __init__(self, status_code, detail, title):
@@ -169,7 +169,7 @@ async def sendMsg(msg_data: NewMessage, userId: int = Depends(UserMethods.start_
 @app.get("/chat")
 async def set_chat_title(chat_id: int, user_msg: str, userId: int = Depends(UserMethods.start_verifying), db: AsyncSession = Depends(get_db)):
     if not await UserMethods.is_subscribed(userId, db):
-        raise HTTPException(status.HTTP_403_FORBIDDEN, "пользователь не подписан!")
+        raise HTTPException(status.HTTP_426_UPGRADE_REQUIRED, "пользователь не подписан!")
     chat_search = await db.execute(select(Chat).filter(Chat.userId == userId, Chat.id == chat_id))
     result = chat_search.scalar_one_or_none()
 
@@ -180,7 +180,7 @@ async def set_chat_title(chat_id: int, user_msg: str, userId: int = Depends(User
         try:
             chat_title = BibleChatAi.setTitleChat(user_msg)
         except RateLimitError:
-            raise InfoUserException(status_code=500, detail="Превышен лимит запросов или закончилась квота.", title="Лимит запросов")
+            raise InfoUserException(status_code=500, detail="Превышен лимит запросов или закончилась квота. Отправь эту ошибку нам в чат.", title="Лимит запросов")
         except Exception as e:
             raise InfoUserException(status_code=501, detail=f"Неизвестная ошибка: {e}. Отправь скриншот ошибки в наш телеграм чат", title="Неизвестная ошибка")
 
@@ -214,7 +214,7 @@ async def getBotMsg(chat_id: int, userId: int = Depends(UserMethods.start_verify
     try:
         bot_msg_text = BibleChatAi.askBibleChat(last_msg.text, context_msgs, username)
     except RateLimitError:
-        raise InfoUserException(status_code=500, detail="Превышен лимит запросов или закончилась квота.", title="Лимит запросов")
+        raise InfoUserException(status_code=500, detail="Превышен лимит запросов или закончилась квота. Отправь скриншот нам в чат", title="Лимит запросов")
     except Exception as e:
         raise InfoUserException(status_code=501, detail=f"Неизвестная ошибка: {e}. Отправь скриншот ошибки в наш телеграм чат", title="Неизвестная ошибка")
 
@@ -283,7 +283,7 @@ async def create_quiz(params: PostQuiz, user: int = Depends(UserMethods.start_ve
     try:
         new_quiz = await UserMethods.make_quiz(user, params.topic, db)
     except RateLimitError:
-        raise InfoUserException(status_code=500, detail="Превышен лимит запросов или закончилась квота.", title="Лимит запросов")
+        raise InfoUserException(status_code=500, detail="Превышен лимит запросов или закончилась квота. Отправь скриншот ошибки нам в чат", title="Лимит запросов")
     except Exception as e:
         raise InfoUserException(status_code=501, detail=f"Неизвестная ошибка: {e}. Отправь скриншот ошибки в наш телеграм чат", title="Неизвестная ошибка")
     
@@ -376,7 +376,7 @@ async def get_daily_verse(user_id: int = Depends(UserMethods.start_verifying), d
     try:
         getting_daily_verse = await UserMethods.get_new_daily_verse(user_id, db)
     except RateLimitError:
-        raise InfoUserException(status_code=500, detail="Превышен лимит запросов или закончилась квота.", title="Лимит запросов")
+        raise InfoUserException(status_code=500, detail="Превышен лимит запросов или закончилась квота. Отправь скриншот ошибки нам в чат.", title="Лимит запросов")
     except Exception as e:
         raise InfoUserException(status_code=501, detail=f"Неизвестная ошибка: {e}. Отправь скриншот ошибки в наш телеграм чат", title="Неизвестная ошибка")
     return getting_daily_verse
@@ -403,35 +403,35 @@ async def ban_user(params: BanUserClass, db: AsyncSession = Depends(get_db)):
     await UserMethods.add_banned_users(params.list_users, db)
     return {"ok": True}
 
-class TechSupportModel(BaseModel):
-    user_text: str
+# class TechSupportModel(BaseModel):
+#     user_text: str
 
-@app.post('/support')
-async def forward_to_support(params: TechSupportModel, user: int = Depends(UserMethods.start_verifying)):
-    tasks = [bot.send_message(admin, report % (user, user, params.user_text), parse_mode="HTML") for admin in ADMINS_LIST]
-    await asyncio.gather(*tasks)
-    return {"ok": True}
+# @app.post('/support')
+# async def forward_to_support(params: TechSupportModel, user: int = Depends(UserMethods.start_verifying)):
+#     tasks = [bot.send_message(admin, report % (user, user, params.user_text), parse_mode="HTML") for admin in ADMINS_LIST]
+#     await asyncio.gather(*tasks)
+#     return {"ok": True}
 
-@app.post("/webhook")
-async def webhook(request: Request, db: AsyncSession = Depends(get_db)) -> None:
-    new_update_msg = await request.json()
-    successful_payment = new_update_msg.get("message", {}).get("successful_payment")
-    if successful_payment:
-        user_id = new_update_msg.get("message", {}).get("from", {}).get("id")
-        await UserMethods.subscribe_db(user_id, db)
-    update = Update.model_validate(new_update_msg, context={"bot": bot})
-    await dp.feed_update(bot, update)
+# @app.post("/webhook")
+# async def webhook(request: Request, db: AsyncSession = Depends(get_db)) -> None:
+#     new_update_msg = await request.json()
+#     successful_payment = new_update_msg.get("message", {}).get("successful_payment")
+#     if successful_payment:
+#         user_id = new_update_msg.get("message", {}).get("from", {}).get("id")
+#         await UserMethods.subscribe_db(user_id, db)
+#     update = Update.model_validate(new_update_msg, context={"bot": bot})
+#     await dp.feed_update(bot, update)
 
-frontend_dist = os.path.join(os.path.dirname(__file__), 'dist')
-frontend_dist = os.path.abspath(frontend_dist)
+# frontend_dist = os.path.join(os.path.dirname(__file__), 'dist')
+# frontend_dist = os.path.abspath(frontend_dist)
 
-app.mount("/assets", StaticFiles(directory=os.path.join(frontend_dist, 'assets')), name="assets")
-app.mount("/css", StaticFiles(directory=os.path.join(frontend_dist, 'css')), name="css")
-app.mount("/js", StaticFiles(directory=os.path.join(frontend_dist, 'js')), name="js")
+# app.mount("/assets", StaticFiles(directory=os.path.join(frontend_dist, 'assets')), name="assets")
+# app.mount("/css", StaticFiles(directory=os.path.join(frontend_dist, 'css')), name="css")
+# app.mount("/js", StaticFiles(directory=os.path.join(frontend_dist, 'js')), name="js")
     
-@app.get("/{full_path:path}")
-async def serve_vue_app(full_path: str):
-    return FileResponse(os.path.join(frontend_dist, "index.html"))
+# @app.get("/{full_path:path}")
+# async def serve_vue_app(full_path: str):
+#     return FileResponse(os.path.join(frontend_dist, "index.html"))
 
-if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+# if __name__ == "__main__":
+#     uvicorn.run(app, host="0.0.0.0", port=8000)

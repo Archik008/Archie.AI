@@ -8,7 +8,7 @@ import asyncio
 import httpx
 
 
-URL = "https://0150-37-32-73-239.ngrok-free.app"
+URL = "https://b116-37-32-73-239.ngrok-free.app"
 bot = Bot(DEV_BOT_TOKEN)
 my_router = Router()
 dp = Dispatcher()
