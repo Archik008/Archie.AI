@@ -167,9 +167,9 @@ async def sendMsg(msg_data: NewMessage, userId: int = Depends(UserMethods.start_
     }
 
 @app.get("/chat")
-async def set_chat_title(chat_id: int, user_msg: str, userId: int = Depends(UserMethods.start_verifying), db: AsyncSession = Depends(get_db)):
-    if not await UserMethods.is_subscribed(userId, db):
-        raise HTTPException(status.HTTP_426_UPGRADE_REQUIRED, "пользователь не подписан!")
+async def set_chat_title(chat_id: int, user_msg: str, userId: int  = Depends(UserMethods.start_verifying), db: AsyncSession = Depends(get_db)):
+    if not await UserMethods.is_subscribed(userId, db) and userId not in WHITE_LIST:
+        raise HTTPException(status.HTTP_426_UPGRADE_REQUIRED, "нельзя!!")
     chat_search = await db.execute(select(Chat).filter(Chat.userId == userId, Chat.id == chat_id))
     result = chat_search.scalar_one_or_none()
 
