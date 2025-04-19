@@ -17,3 +17,5 @@ URL = "https://archiebot.my"
 PASSWORD = "jkbsfb123t78fd312iuf3h2187"
 
 BANNED_USERS = [7413826637, 7507257106]
+
+NGROK_URL = "YOUR_NGROK_URL"

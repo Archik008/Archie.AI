@@ -2,13 +2,11 @@ from aiogram import Router, Dispatcher, Bot, types
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo, Message, LabeledPrice
 from aiogram.filters import Command
 
-from pyconfig import DEV_BOT_TOKEN, ADMINS_LIST, PASSWORD
+from pyconfig import DEV_BOT_TOKEN, ADMINS_LIST, PASSWORD, NGROK_URL
 
 import asyncio
 import httpx
 
-
-URL = "https://b116-37-32-73-239.ngrok-free.app"
 bot = Bot(DEV_BOT_TOKEN)
 my_router = Router()
 dp = Dispatcher()
@@ -32,13 +30,13 @@ hello_user = """Приветствую тебя в проекте <b>Archie.AI</
 
 @my_router.message(Command("start"))
 async def answerWebApp(msg: Message):
-    bot_url = f"{URL}/bot"  # Ссылка на ваше веб-приложение
+    bot_url = f"{NGROK_URL}/bot"  # Ссылка на ваше веб-приложение
     bible_ai_button = InlineKeyboardButton(
         text="Библейский бот",
         web_app=WebAppInfo(url=bot_url)
     )
 
-    quiz_url = f"{URL}/quizes_app"
+    quiz_url = f"{NGROK_URL}/quizes_app"
     quiz_ai_button = InlineKeyboardButton(
         text="ИИ викторина",
         web_app=WebAppInfo(url=quiz_url)
