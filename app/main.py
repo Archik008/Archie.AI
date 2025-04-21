@@ -9,6 +9,9 @@ from bot import bot, dp, lifespan
 
 from starlette.responses import FileResponse 
 
+from fastapi.responses import JSONResponse
+from fastapi.encoders import jsonable_encoder
+
 import asyncio
 
 from pydantic import BaseModel

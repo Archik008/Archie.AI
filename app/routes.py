@@ -1,8 +1,6 @@
 from fastapi import APIRouter
 
 from fastapi import Depends, HTTPException, status
-from fastapi.responses import JSONResponse
-from fastapi.encoders import jsonable_encoder
 from openai import RateLimitError
 
 from sqlalchemy import select, update, delete, and_
