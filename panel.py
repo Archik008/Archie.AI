@@ -6,9 +6,9 @@ from starlette.middleware.sessions import SessionMiddleware
 import jwt, secrets, uvicorn
 
 from database import engine
-from models import Base
-from config import settings
-from pyconfig import URL
+from database.models import Base
+from configure.config import settings
+from configure.pyconfig import URL
 
 SECRET_KEY = secrets.token_urlsafe(16)
 ALGORITHM = "HS256"

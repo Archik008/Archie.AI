@@ -1,6 +1,6 @@
 import openai
 import re
-from pyconfig import API_KEY
+from configure.pyconfig import API_KEY
 
 
 openai.api_key = API_KEY

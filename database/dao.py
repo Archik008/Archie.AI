@@ -1,28 +1,27 @@
 from sqlalchemy import select, update, and_
 from sqlalchemy.orm import selectinload
-from database import get_db
+from database.database import get_db
 from fastapi import Depends, HTTPException, Header, status
-from models import *
-from pyconfig import WHITE_LIST
-from ai import QuizAi, BibleChatAi
-from encrypt import is_safe
+from database.models import *
+from configure.pyconfig import WHITE_LIST
+from ai_dir.ai import QuizAi, BibleChatAi
+from encryption.encrypt import is_safe
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from schemas import AnswerQuestionClass
+from fastapi_models.schemas import AnswerQuestionClass
 
 from datetime import timedelta
 
 import random
 
-class UserMethods:
-
+class DAOModel:
     async def verifyUser(init_data: str, db: AsyncSession):
         if not init_data:
             return {"status": "missing"}
                         
         is_valid, userId = is_safe(init_data)
 
-        if is_valid and not await UserMethods.search_banned_user(userId, db):
+        if is_valid and not await DAOModel.search_banned_user(userId, db):
             return {"userId": userId, "status": "valid"}
         
         return {"status": "invalid"}
@@ -38,7 +37,7 @@ class UserMethods:
     
     async def add_banned_users(userIds: list, db: AsyncSession):
         for userId in userIds:
-            cur_user = await UserMethods.search_banned_user(userId, db)
+            cur_user = await DAOModel.search_banned_user(userId, db)
             if not cur_user:
                 new_banned_user = BannedUser(userId=userId)
                 db.add(new_banned_user)
@@ -60,12 +59,12 @@ class UserMethods:
         return result_date.date()
         
     async def is_premium(userId: int, db: AsyncSession):
-        result_date = await UserMethods.get_date_subscribe(userId, db)
+        result_date = await DAOModel.get_date_subscribe(userId, db)
         if result_date:
             return True
         
     async def is_subscribed(userId: int, db: AsyncSession):
-        result_date = await UserMethods.get_date_subscribe(userId, db)
+        result_date = await DAOModel.get_date_subscribe(userId, db)
 
         now_date = datetime.now().date()
 
@@ -96,8 +95,8 @@ class UserMethods:
     async def allow_not_premium_using(userId, db: AsyncSession):
         if userId in WHITE_LIST:
             return True
-        attempts = await UserMethods.get_attempts(userId, db)
-        premium_user = await UserMethods.is_premium(userId, db)
+        attempts = await DAOModel.get_attempts(userId, db)
+        premium_user = await DAOModel.is_premium(userId, db)
         if attempts <= 0 or premium_user:
             return 
         return True
@@ -115,7 +114,7 @@ class UserMethods:
         await db.commit()
 
     async def start_verifying(init_data: str = Header(...), db: AsyncSession = Depends(get_db)):
-        result_verify = await UserMethods.verifyUser(init_data, db)
+        result_verify = await DAOModel.verifyUser(init_data, db)
 
         if result_verify['status'] == 'invalid':
             raise HTTPException(status.HTTP_406_NOT_ACCEPTABLE, "Not allowed. God bless you!")
@@ -192,7 +191,7 @@ class UserMethods:
         return ls_quiz
     
     async def get_caption(userId, userText, db: AsyncSession):
-        if not await UserMethods.is_premium(userId, db) and userId not in WHITE_LIST:
+        if not await DAOModel.is_premium(userId, db) and userId not in WHITE_LIST:
             return
         
         listCaptions = ['Как довериться Богу', "Заповедь Божья", "Вера в Бога"]
@@ -202,12 +201,12 @@ class UserMethods:
         return caption
 
     async def minus_attempts(userId, db: AsyncSession):
-        allowed_using = await UserMethods.allow_not_premium_using(userId, db)
+        allowed_using = await DAOModel.allow_not_premium_using(userId, db)
         if not allowed_using:
             raise HTTPException(403, {"status": "not allowed"})
-        attempts = await UserMethods.get_attempts(userId, db)
+        attempts = await DAOModel.get_attempts(userId, db)
         attempts -= 1
-        await UserMethods.update_attempts_db(userId, attempts, db)
+        await DAOModel.update_attempts_db(userId, attempts, db)
 
     async def get_last_msg(userId, chatId, db: AsyncSession):
         user_msg_search = await db.execute(select(Message).filter(Message.userId == userId, Message.chatId == chatId))
@@ -250,7 +249,7 @@ class UserMethods:
         return is_passed
 
     async def get_quiz_db(userId, quizId, db: AsyncSession):
-        result_question, result_answers = await UserMethods.get_question_answers_unanswered(userId, quizId, db)
+        result_question, result_answers = await DAOModel.get_question_answers_unanswered(userId, quizId, db)
 
         quiz_search = await db.execute(select(Quiz).where(Quiz.id == quizId))
         result_quiz = quiz_search.scalars().first()

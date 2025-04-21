@@ -3,7 +3,7 @@ import hashlib
 import json
 from urllib.parse import unquote
 
-from pyconfig import MAIN_BOT_TOKEN, DEV_BOT_TOKEN
+from configure.pyconfig import MAIN_BOT_TOKEN, DEV_BOT_TOKEN
 
 def is_safe(init_data: str) -> bool:
     for bot_token in [MAIN_BOT_TOKEN, DEV_BOT_TOKEN]:

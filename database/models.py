@@ -1,6 +1,6 @@
 from sqlalchemy import ForeignKey, BigInteger
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from database import Base
+from database.database import Base
 
 from typing import Annotated, Optional
 from datetime import datetime
@@ -147,3 +147,9 @@ class BannedUser(Base):
     userId: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
 
     user: Mapped["User"] = relationship("User", back_populates="banned")
+
+def get_db():
+    Base.metadata.create_all()
+
+def drop_db():
+    Base.metadata.drop_all()

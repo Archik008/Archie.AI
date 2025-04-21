@@ -9,7 +9,7 @@ from texts import *
 
 import httpx
 
-from pyconfig import URL, MAIN_BOT_TOKEN, ADMINS_LIST, PASSWORD
+from configure.pyconfig import URL, MAIN_BOT_TOKEN, ADMINS_LIST, PASSWORD
 
 
 bot = Bot(MAIN_BOT_TOKEN)

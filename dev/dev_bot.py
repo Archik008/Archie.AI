@@ -2,7 +2,7 @@ from aiogram import Router, Dispatcher, Bot, types
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo, Message, LabeledPrice
 from aiogram.filters import Command
 
-from pyconfig import DEV_BOT_TOKEN, ADMINS_LIST, PASSWORD, NGROK_URL
+from configure.pyconfig import DEV_BOT_TOKEN, ADMINS_LIST, PASSWORD, NGROK_URL
 
 import asyncio
 import httpx
