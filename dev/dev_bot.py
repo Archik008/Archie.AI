@@ -47,7 +47,6 @@ async def answerWebApp(msg: Message):
 
     await msg.answer(hello_user, reply_markup=keyboard, parse_mode="HTML")
 
-
 @my_router.message(Command("ban"))
 async def ban_user(msg: Message):
     if not msg.from_user.id in ADMINS_LIST:

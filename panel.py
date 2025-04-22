@@ -5,7 +5,7 @@ from starlette.middleware.sessions import SessionMiddleware
 
 import jwt, secrets, uvicorn
 
-from database import engine
+from database.database import engine
 from database.models import Base
 from configure.config import settings
 from configure.pyconfig import URL

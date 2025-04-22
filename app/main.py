@@ -20,6 +20,7 @@ from texts import *
 from database.dao import *
 from fastapi.middleware.cors import CORSMiddleware
 
+
 from starlette.requests import Request
 from fastapi.staticfiles import StaticFiles
 
