@@ -44,7 +44,7 @@ app.add_middleware(
 class NoCacheStaticMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request, call_next):
         response: Response = await call_next(request)
-        if any(request.url.path.startswith(url) for url in ["/css", "/js"]):
+        if any(request.url.path.startswith(url) for url in ["/dist/css", "/dist/js"]):
             response.headers["Cache-Control"] = "no-store"
         return response
 
