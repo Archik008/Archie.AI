@@ -22,6 +22,6 @@ jobs:
           key: ${{ secrets.VPS_PRIVATE_KEY }}
           script: |
             cd Archie.AI
-            git pull origin main
+            git pull
             docker compose down
             docker compose up -d --build
