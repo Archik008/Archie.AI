@@ -41,19 +41,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-class NoCacheStaticFiles(StaticFiles):
-    def __init__(self, *args: Any, **kwargs: Any):
-        self.cachecontrol = "max-age=0, no-cache, no-store, , must-revalidate"
-        self.pragma = "no-cache"
-        self.expires = "0"
-        super().__init__(*args, **kwargs)
-
-    def file_response(self, *args: Any, **kwargs: Any) -> Response:
-        resp = super().file_response(*args, **kwargs)
-        resp.headers.setdefault("Cache-Control", self.cachecontrol)
-        resp.headers.setdefault("Pragma", self.pragma)
-        resp.headers.setdefault("Expires", self.expires)
-        return resp
+class StaticFilesWithoutCaching(StaticFiles):
+    def is_not_modified(self, *args, **kwargs) -> bool:
+        return super().is_not_modified(*args, **kwargs) and False
 
 app.include_router(router)
 
@@ -61,8 +51,8 @@ frontend_dist = os.path.join(os.path.dirname(__file__), 'dist')
 frontend_dist = os.path.abspath(frontend_dist)
 
 app.mount("/assets", StaticFiles(directory=os.path.join(frontend_dist, 'assets')), name="assets")
-app.mount("/css", NoCacheStaticFiles(directory=os.path.join(frontend_dist, 'css')), name="css")
-app.mount("/js", NoCacheStaticFiles(directory=os.path.join(frontend_dist, 'js')), name="js")
+app.mount("/css", StaticFilesWithoutCaching(directory=os.path.join(frontend_dist, 'css')), name="css")
+app.mount("/js", StaticFilesWithoutCaching(directory=os.path.join(frontend_dist, 'js')), name="js")
 
 class TechSupportModel(BaseModel):
     user_text: str
