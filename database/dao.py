@@ -248,14 +248,12 @@ class DAOModel:
             .options(selectinload(Question.answers))  # Ленивая загрузка ответов
         )
 
-        result = q_a_search.scalars().all()
+        result = q_a_search.scalars().first()
 
-        if len(result) == 0:
+        if not result:
             raise HTTPException(404, "not found question")
-        
-        question = result[0]
-        
-        return question, question.answers
+                
+        return result, result.answers
 
     @staticmethod
     async def is_quiz_answered(userId, quizId, db: AsyncSession):

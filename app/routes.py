@@ -173,14 +173,15 @@ async def getBotMsg(chat_id: int, userId: int = Depends(DAOModel.start_verifying
         
     message_search = await db.execute(select(Message).where(and_(Message.userId == userId, Message.chatId == chat_id)))
 
-    results = message_search.scalars().all()
-
-    results = results[:5] if not (await DAOModel.allow_not_premium_using(userId, db) or await DAOModel.is_premium(userId, db)) else results
+    results = list(message_search.scalars().all())
+    results.sort(key=lambda msg: msg.id)
 
     if len(results) == 0:
         raise HTTPException(403, "Not allowed using")
     
     context_msgs = [ContextMessage(message.text, message.is_bot) for message in results]
+    if len(context_msgs) <= 1:
+        context_msgs.clear()
 
     username_search = await db.execute(select(User.userName).filter(User.id == userId))
     username = username_search.scalar_one()
