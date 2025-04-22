@@ -1,4 +1,4 @@
-name: CI
+name: CI/CD Pipeline
 
 on:
   push:
@@ -12,12 +12,18 @@ jobs:
     
     steps:
       - name: 📥 Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: 🐍 Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.13'
+
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: pip-${{ hashFiles('requirements.txt') }}
 
       - name: 🧪 Install dependencies
         run: |
@@ -27,3 +33,15 @@ jobs:
       - name: ✅ Run tests
         run: |
           pytest
+
+      - name: Connect and Deploy via SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: root
+          key: ${{ secrets.VPS_PRIVATE_KEY }}
+          script: |
+            cd Archie.AI
+            git pull
+            docker compose down
+            docker compose up -d --build
