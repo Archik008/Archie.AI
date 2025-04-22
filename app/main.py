@@ -40,6 +40,13 @@ app.add_middleware(
 
 app.include_router(router)
 
+frontend_dist = os.path.join(os.path.dirname(__file__), 'dist')
+frontend_dist = os.path.abspath(frontend_dist)
+
+app.mount("/assets", StaticFiles(directory=os.path.join(frontend_dist, 'assets')), name="assets")
+app.mount("/css", StaticFiles(directory=os.path.join(frontend_dist, 'css')), name="css")
+app.mount("/js", StaticFiles(directory=os.path.join(frontend_dist, 'js')), name="js")
+
 class TechSupportModel(BaseModel):
     user_text: str
 
@@ -63,13 +70,6 @@ async def webhook(request: Request, db: AsyncSession = Depends(get_db)) -> None:
         await DAOModel.subscribe_db(user_id, db)
     update = Update.model_validate(new_update_msg, context={"bot": bot})
     await dp.feed_update(bot, update)
-
-frontend_dist = os.path.join(os.path.dirname(__file__), 'dist')
-frontend_dist = os.path.abspath(frontend_dist)
-
-router.mount("/assets", StaticFiles(directory=os.path.join(frontend_dist, 'assets')), name="assets")
-router.mount("/css", StaticFiles(directory=os.path.join(frontend_dist, 'css')), name="css")
-router.mount("/js", StaticFiles(directory=os.path.join(frontend_dist, 'js')), name="js")
     
 @app.get("/{full_path:path}")
 async def serve_vue_router(full_path: str):
