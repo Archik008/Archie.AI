@@ -15,6 +15,8 @@ from datetime import timedelta
 import random
 
 class DAOModel:
+
+    @staticmethod
     async def verifyUser(init_data: str, db: AsyncSession):
         if not init_data:
             return {"status": "missing"}
@@ -26,6 +28,7 @@ class DAOModel:
         
         return {"status": "invalid"}
     
+    @staticmethod
     async def search_banned_user(userId, db: AsyncSession):
         search_user = await db.execute(select(BannedUser).filter(BannedUser.userId == userId))
         user = search_user.scalar_one_or_none()
@@ -35,6 +38,7 @@ class DAOModel:
         
         return True
     
+    @staticmethod
     async def add_banned_users(userIds: list, db: AsyncSession):
         for userId in userIds:
             cur_user = await DAOModel.search_banned_user(userId, db)
@@ -45,24 +49,28 @@ class DAOModel:
         else:
             await db.commit()
 
+    @staticmethod
     async def is_user_exists(userId: int, db: AsyncSession):
         user = await db.execute(select(User).where(User.id == userId))
         result_user = user.scalars().first()
         if result_user:
             return True
         
+    @staticmethod
     async def get_date_subscribe(userId: int, db: AsyncSession):
         date_search = await db.execute(select(User.subscribe_date).filter(User.id == userId))
         result_date = date_search.scalar_one_or_none()
         if not result_date:
             return result_date
         return result_date.date()
-        
+    
+    @staticmethod
     async def is_premium(userId: int, db: AsyncSession):
         result_date = await DAOModel.get_date_subscribe(userId, db)
         if result_date:
             return True
         
+    @staticmethod
     async def is_subscribed(userId: int, db: AsyncSession):
         result_date = await DAOModel.get_date_subscribe(userId, db)
 
@@ -71,15 +79,18 @@ class DAOModel:
         if result_date and result_date >= now_date:
             return True
         
+    @staticmethod
     async def get_attempts(userId, db: AsyncSession):
         result_user = await db.execute(select(User.attempts).where(User.id == userId))
         user_attempts = result_user.unique().scalar_one()
         return user_attempts
-
+    
+    @staticmethod
     async def update_attempts_db(userId, attempts, db: AsyncSession):
         await db.execute(update(User).where(User.id == userId).values(attempts=attempts))
         await db.commit()
 
+    @staticmethod
     async def update_user_attempts(userId, db: AsyncSession):
         search_user = await db.execute(select(User).filter(User.id == userId))
         user = search_user.scalar_one_or_none()
@@ -91,7 +102,8 @@ class DAOModel:
         if cur_date > user.updated_at.date():
             user.attempts = 5
             await db.commit()
-            
+
+    @staticmethod 
     async def allow_not_premium_using(userId, db: AsyncSession):
         if userId in WHITE_LIST:
             return True
@@ -101,6 +113,7 @@ class DAOModel:
             return 
         return True
     
+    @staticmethod
     async def subscribe_db(userId, db: AsyncSession):
         user_search = await db.execute(select(User).filter(User.id == userId))
         user = user_search.scalar_one_or_none()
@@ -113,6 +126,7 @@ class DAOModel:
         user.subscribe_date += timedelta(days=31)
         await db.commit()
 
+    @staticmethod
     async def start_verifying(init_data: str = Header(...), db: AsyncSession = Depends(get_db)):
         result_verify = await DAOModel.verifyUser(init_data, db)
 
@@ -125,6 +139,7 @@ class DAOModel:
 
         return userId
     
+    @staticmethod
     async def make_quiz(userId, topic, db: AsyncSession):
         my_points = 6
 
@@ -182,6 +197,7 @@ class DAOModel:
 
         return dict_question_answers
     
+    @staticmethod
     async def get_quizes_db(userId, db: AsyncSession):
         search_quizes = await db.execute(select(Quiz).filter(Quiz.userId == userId).options(selectinload(Quiz.questions)))
         result_quizes = search_quizes.scalars().all()
@@ -190,6 +206,7 @@ class DAOModel:
         
         return ls_quiz
     
+    @staticmethod
     async def get_caption(userId, userText, db: AsyncSession):
         if not await DAOModel.is_premium(userId, db) and userId not in WHITE_LIST:
             return
@@ -200,6 +217,7 @@ class DAOModel:
 
         return caption
 
+    @staticmethod
     async def minus_attempts(userId, db: AsyncSession):
         allowed_using = await DAOModel.allow_not_premium_using(userId, db)
         if not allowed_using:
@@ -208,6 +226,7 @@ class DAOModel:
         attempts -= 1
         await DAOModel.update_attempts_db(userId, attempts, db)
 
+    @staticmethod
     async def get_last_msg(userId, chatId, db: AsyncSession):
         user_msg_search = await db.execute(select(Message).filter(Message.userId == userId, Message.chatId == chatId))
         result_msg = user_msg_search.scalars().all()
@@ -217,7 +236,7 @@ class DAOModel:
             return
         return result_msgs[-1]
 
-
+    @staticmethod
     async def get_question_answers_unanswered(userId, quizId, db: AsyncSession):
         q_a_search = await db.execute(
             select(Question)
@@ -238,6 +257,7 @@ class DAOModel:
         
         return question, question.answers
 
+    @staticmethod
     async def is_quiz_answered(userId, quizId, db: AsyncSession):
         questions_search = await db.execute(select(Question).join(Quiz).where(and_(Question.quiz_id == quizId, Quiz.userId == userId)))
         result_questions = questions_search.scalars().all()
@@ -248,6 +268,7 @@ class DAOModel:
 
         return is_passed
 
+    @staticmethod
     async def get_quiz_db(userId, quizId, db: AsyncSession):
         result_question, result_answers = await DAOModel.get_question_answers_unanswered(userId, quizId, db)
 
@@ -259,6 +280,7 @@ class DAOModel:
         
         return {"answers": [{"id": answer.id, "text": answer.answer} for answer in result_answers], "question": {"text": result_question.question, "id": result_question.id}, "quiz": {"points": result_quiz.points, "max_points": result_quiz.max_points}}
     
+    @staticmethod
     async def answer_question_db(user, params: AnswerQuestionClass, db: AsyncSession):
         quiz_search = await db.execute(select(Quiz).where(and_(Quiz.userId == user, Quiz.id == params.quiz_id)))
         result_quiz = quiz_search.scalars().first()
@@ -298,6 +320,7 @@ class DAOModel:
 
         return {"correct_answers": [{"id": answer.id} for answer in question.answers if answer.is_true], "quiz": {"points": result_quiz.points, "max_points": result_quiz.max_points}}
     
+    @staticmethod
     async def get_new_daily_verse(userId, db: AsyncSession):
         async def add_new_user_verse_model(daily_verse, verse_title):
             new_daily_verse_user = DailyVerse(verse=daily_verse, title=verse_title, userId=userId)
@@ -319,11 +342,68 @@ class DAOModel:
         else:
             return {"has_seen": True}
         
-
         await db.commit()
 
         return {"daily_verse": {"title": verse_model.title, "verse": verse_model.verse}}
     
+    # @staticmethod
+    # async def setUpdate(updateValue: bool, db: AsyncSession):
+    #     update_search = await db.execute(select(NeedUpdate))
+    #     result = update_search.scalar_one_or_none()
+    #     if result:
+    #         result.need_update = updateValue
+    #     else:
+    #         result = NeedUpdate(need_update=updateValue)
+    #         db.add(result)
+    #     await db.flush()
+    #     await db.commit()
+
+    @staticmethod
+    async def getNeedUpdateByUser(user_id, db: AsyncSession):
+        user_search = await db.execute(select(UserUpdate).filter(UserUpdate.userId == user_id))
+        user = user_search.scalar_one_or_none()
+
+        if not user:
+            return
+        
+        return user.is_updated
+
+    # @staticmethod
+    # async def getNeedUpdate(db: AsyncSession):
+    #     search = await db.execute(select(NeedUpdate))
+    #     result = search.scalar_one_or_none()
+
+    #     if not result:
+    #         return
+        
+    #     return result.need_update
+    
+    # @staticmethod
+    # async def is_all_updated(db: AsyncSession):
+    #     users_search = await db.execute(select(UserUpdate))
+    #     users = users_search.scalars().all()
+
+    #     if all(user.is_updated for user in users):
+    #         await db.execute(update(NeedUpdate).values(need_update=False))
+    #         await db.commit()
+
+    @staticmethod
+    async def set_need_updated_all(value: bool, db: AsyncSession):
+        await db.execute(update(UserUpdate).values(is_updated=value))
+        await db.commit()
+    
+    @staticmethod
+    async def setUpdateUser(user_id, update_value, db: AsyncSession):
+        user_search = await db.execute(select(UserUpdate).filter(UserUpdate.userId == user_id))
+        user = user_search.scalar_one_or_none()
+        if user:
+            await db.execute(update(UserUpdate).where(UserUpdate.userId == user_id).values(is_updated=update_value))
+        else:
+            new_user = UserUpdate(is_updated=update_value, userId=user_id)
+            db.add(new_user)
+            await db.flush()
+        await db.commit()
+
 class ContextMessage:
     def __init__(self, text, is_bot):
         self.text = text

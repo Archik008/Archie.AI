@@ -12,13 +12,23 @@ from database.models import *
 from fastapi_models.schemas import *
 
 from database.dao import *
+from database.database import SessionLocal
 
 from configure.pyconfig import ADMIN_ID, WHITE_LIST, AI_TEST_TOPICS, PASSWORD
 
 from bot import create_invoice_link_bot
 from ai_dir.ai import BibleChatAi
+from contextlib import asynccontextmanager
 
-router = APIRouter()
+@asynccontextmanager
+async def lifespan(router: APIRouter):
+    async with SessionLocal() as db:
+        await DAOModel.set_need_updated_all(False, db)
+    yield
+
+    print("🧹 Приложение завершается.")
+
+router = APIRouter(lifespan=lifespan)
 
 class InfoUserException(HTTPException):
     def __init__(self, status_code, detail, title):
@@ -376,3 +386,25 @@ async def ban_user(params: BanUserClass, db: AsyncSession = Depends(get_db)):
         raise HTTPException(status_code=status.HTTP_418_IM_A_TEAPOT, detail="Доступ запрещен!!")
     await DAOModel.add_banned_users(params.list_users, db)
     return {"ok": True}
+
+@router.get("/need_update")
+async def check_updated_for_user(user_id: int = Depends(DAOModel.start_verifying), db: AsyncSession = Depends(get_db)):
+    user_search = await db.execute(select(UserUpdate).filter(UserUpdate.userId == user_id))
+    user = user_search.scalars().first()
+
+    if not user or not user.is_updated:
+        return {"updated": False}
+    
+    return {"updated": True}
+
+class UpdateBody(BaseModel):
+    is_updated: bool
+
+@router.post("/set_updated")
+async def set_update_user(params: UpdateBody, user_id: int = Depends(DAOModel.start_verifying), db: AsyncSession = Depends(get_db)):
+    await DAOModel.setUpdateUser(user_id, params.is_updated, db)
+    return {"ok": True}
+
+class SetNeedUpdate(BaseModel):
+    is_updated: bool
+    password: str
