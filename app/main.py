@@ -24,8 +24,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from starlette.requests import Request
 from fastapi.staticfiles import StaticFiles
 from starlette.responses import Response
-from starlette.middleware.base import BaseHTTPMiddleware
-from starlette.types import Scope, Receive, Send
+from typing import Any
 
 from configure.pyconfig import ADMINS_LIST, URL
 
@@ -43,14 +42,18 @@ app.add_middleware(
 )
 
 class NoCacheStaticFiles(StaticFiles):
-    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
-        async def send_with_cache_control(message):
-            if message["type"] == "http.response.start":
-                headers = dict(message["headers"])
-                headers[b"cache-control"] = b"no-store"
-                message["headers"] = list(headers.items())
-            await send(message)
-        await super().__call__(scope, receive, send_with_cache_control)
+    def __init__(self, *args: Any, **kwargs: Any):
+        self.cachecontrol = "max-age=0, no-cache, no-store, , must-revalidate"
+        self.pragma = "no-cache"
+        self.expires = "0"
+        super().__init__(*args, **kwargs)
+
+    def file_response(self, *args: Any, **kwargs: Any) -> Response:
+        resp = super().file_response(*args, **kwargs)
+        resp.headers.setdefault("Cache-Control", self.cachecontrol)
+        resp.headers.setdefault("Pragma", self.pragma)
+        resp.headers.setdefault("Expires", self.expires)
+        return resp
 
 app.include_router(router)
 
