@@ -23,6 +23,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from starlette.requests import Request
 from fastapi.staticfiles import StaticFiles
+from starlette.responses import Response
+from starlette.middleware.base import BaseHTTPMiddleware
 
 from configure.pyconfig import ADMINS_LIST, URL
 
@@ -39,7 +41,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+class NoCacheStaticMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request, call_next):
+        response: Response = await call_next(request)
+        if any(request.url.path.startswith(url) for url in ["/css", "/js"]):
+            response.headers["Cache-Control"] = "no-store"
+        return response
+
 app.include_router(router)
+app.add_middleware(NoCacheStaticMiddleware)
 
 frontend_dist = os.path.join(os.path.dirname(__file__), 'dist')
 frontend_dist = os.path.abspath(frontend_dist)
