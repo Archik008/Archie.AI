@@ -23,8 +23,6 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from starlette.requests import Request
 from fastapi.staticfiles import StaticFiles
-from starlette.responses import Response
-from typing import Any
 
 from configure.pyconfig import ADMINS_LIST, URL
 

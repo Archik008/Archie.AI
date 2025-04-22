@@ -18,17 +18,8 @@ from configure.pyconfig import ADMIN_ID, WHITE_LIST, AI_TEST_TOPICS, PASSWORD
 
 from bot import create_invoice_link_bot
 from ai_dir.ai import BibleChatAi
-from contextlib import asynccontextmanager
 
-@asynccontextmanager
-async def lifespan(router: APIRouter):
-    async with SessionLocal() as db:
-        await DAOModel.set_need_updated_all(False, db)
-    yield
-
-    print("🧹 Приложение завершается.")
-
-router = APIRouter(lifespan=lifespan)
+router = APIRouter()
 
 class InfoUserException(HTTPException):
     def __init__(self, status_code, detail, title):
