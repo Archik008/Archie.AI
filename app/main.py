@@ -25,6 +25,7 @@ from starlette.requests import Request
 from fastapi.staticfiles import StaticFiles
 from starlette.responses import Response
 from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.types import Scope, Receive, Send
 
 from configure.pyconfig import ADMINS_LIST, URL
 
@@ -41,22 +42,24 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-class NoCacheStaticMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request, call_next):
-        response: Response = await call_next(request)
-        if request.url.path.endswith("css") or request.url.path.endswith("js"):
-            response.headers["Cache-Control"] = "no-store"
-        return response
+class NoCacheStaticFiles(StaticFiles):
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        async def send_with_cache_control(message):
+            if message["type"] == "http.response.start":
+                headers = dict(message["headers"])
+                headers[b"cache-control"] = b"no-store"
+                message["headers"] = list(headers.items())
+            await send(message)
+        await super().__call__(scope, receive, send_with_cache_control)
 
 app.include_router(router)
-app.add_middleware(NoCacheStaticMiddleware)
 
 frontend_dist = os.path.join(os.path.dirname(__file__), 'dist')
 frontend_dist = os.path.abspath(frontend_dist)
 
 app.mount("/assets", StaticFiles(directory=os.path.join(frontend_dist, 'assets')), name="assets")
-app.mount("/css", StaticFiles(directory=os.path.join(frontend_dist, 'css')), name="css")
-app.mount("/js", StaticFiles(directory=os.path.join(frontend_dist, 'js')), name="js")
+app.mount("/css", NoCacheStaticFiles(directory=os.path.join(frontend_dist, 'css')), name="css")
+app.mount("/js", NoCacheStaticFiles(directory=os.path.join(frontend_dist, 'js')), name="js")
 
 class TechSupportModel(BaseModel):
     user_text: str
