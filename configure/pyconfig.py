@@ -21,3 +21,5 @@ BANNED_USERS = [7413826637, 7507257106]
 NGROK_URL = "https://8e13-37-32-73-239.ngrok-free.app"
 
 MODE = "PROD"
+
+PROJ_LOG_TOKEN = "pylf_v1_eu_TYQsz5bxk1YhmxmRyHYRWkl4QKSsT76kd9xFf3ZT61Jq"

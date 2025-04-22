@@ -3,9 +3,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 from app.routes import *
-from configure.pyconfig import NGROK_URL
+from configure.pyconfig import NGROK_URL, PROJ_LOG_TOKEN
+
+import logfire
+
+logfire.configure(token=PROJ_LOG_TOKEN)
 
 app = FastAPI()
+logfire.instrument_fastapi(app, capture_headers=True)
 
 app.add_middleware(
     CORSMiddleware,

@@ -24,7 +24,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from starlette.requests import Request
 from fastapi.staticfiles import StaticFiles
 
-from configure.pyconfig import ADMINS_LIST, URL
+from configure.pyconfig import ADMINS_LIST, URL, PROJ_LOG_TOKEN
+
+import logfire
+
+logfire.configure(token=PROJ_LOG_TOKEN)
 
 app = FastAPI(lifespan=lifespan,
               docs_url=None,
@@ -39,6 +43,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+logfire.instrument_fastapi(app, capture_headers=True)
 class StaticFilesWithoutCaching(StaticFiles):
     def is_not_modified(self, *args, **kwargs) -> bool:
         return super().is_not_modified(*args, **kwargs) and False
