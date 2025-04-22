@@ -21,7 +21,7 @@ services:
       - "8000"
     volumes:
       - .:/app
-    command: ["python", "-m", "app/main"]
+    command: ["python", "-m", "app.main"]
 
   admin:
     build: .
