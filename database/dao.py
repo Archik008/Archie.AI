@@ -345,64 +345,6 @@ class DAOModel:
         await db.commit()
 
         return {"daily_verse": {"title": verse_model.title, "verse": verse_model.verse}}
-    
-    # @staticmethod
-    # async def setUpdate(updateValue: bool, db: AsyncSession):
-    #     update_search = await db.execute(select(NeedUpdate))
-    #     result = update_search.scalar_one_or_none()
-    #     if result:
-    #         result.need_update = updateValue
-    #     else:
-    #         result = NeedUpdate(need_update=updateValue)
-    #         db.add(result)
-    #     await db.flush()
-    #     await db.commit()
-
-    @staticmethod
-    async def getNeedUpdateByUser(user_id, db: AsyncSession):
-        user_search = await db.execute(select(UserUpdate).filter(UserUpdate.userId == user_id))
-        user = user_search.scalar_one_or_none()
-
-        if not user:
-            return
-        
-        return user.is_updated
-
-    # @staticmethod
-    # async def getNeedUpdate(db: AsyncSession):
-    #     search = await db.execute(select(NeedUpdate))
-    #     result = search.scalar_one_or_none()
-
-    #     if not result:
-    #         return
-        
-    #     return result.need_update
-    
-    # @staticmethod
-    # async def is_all_updated(db: AsyncSession):
-    #     users_search = await db.execute(select(UserUpdate))
-    #     users = users_search.scalars().all()
-
-    #     if all(user.is_updated for user in users):
-    #         await db.execute(update(NeedUpdate).values(need_update=False))
-    #         await db.commit()
-
-    @staticmethod
-    async def set_need_updated_all(value: bool, db: AsyncSession):
-        await db.execute(update(UserUpdate).values(is_updated=value))
-        await db.commit()
-    
-    @staticmethod
-    async def setUpdateUser(user_id, update_value, db: AsyncSession):
-        user_search = await db.execute(select(UserUpdate).filter(UserUpdate.userId == user_id))
-        user = user_search.scalar_one_or_none()
-        if user:
-            await db.execute(update(UserUpdate).where(UserUpdate.userId == user_id).values(is_updated=update_value))
-        else:
-            new_user = UserUpdate(is_updated=update_value, userId=user_id)
-            db.add(new_user)
-            await db.flush()
-        await db.commit()
 
 class ContextMessage:
     def __init__(self, text, is_bot):

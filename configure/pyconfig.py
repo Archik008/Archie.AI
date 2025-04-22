@@ -20,4 +20,4 @@ BANNED_USERS = [7413826637, 7507257106]
 
 NGROK_URL = "https://8e13-37-32-73-239.ngrok-free.app"
 
-MODE = "DEV"
+MODE = "PROD"

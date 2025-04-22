@@ -51,12 +51,6 @@ class User(Base):
         cascade="all, delete-orphan",
         uselist=False
     )
-    user_update: Mapped["UserUpdate"] = relationship(
-        "UserUpdate",
-        back_populates="user",
-        cascade="all, delete-orphan",
-        uselist=False
-    )
     
 
 class Chat(Base):
@@ -154,11 +148,3 @@ class BannedUser(Base):
     userId: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
 
     user: Mapped["User"] = relationship("User", back_populates="banned")
-
-class UserUpdate(Base):
-    __tablename__ = "user_updates"
-
-    userId: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
-    is_updated: Mapped[Optional[bool]] = mapped_column(default=False)
-
-    user: Mapped["User"] = relationship("User", back_populates="user_update")
