@@ -81,4 +81,4 @@ async def serve_vue_router(full_path: str):
     return FileResponse(os.path.join(frontend_dist, "index.html"))
 
 if __name__ == "__main__":
-    uvicorn.run(router, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8000)

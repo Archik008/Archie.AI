@@ -12,7 +12,6 @@ from database.models import *
 from fastapi_models.schemas import *
 
 from database.dao import *
-from database.database import SessionLocal
 
 from configure.pyconfig import ADMIN_ID, WHITE_LIST, AI_TEST_TOPICS, PASSWORD
 
