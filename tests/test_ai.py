@@ -26,7 +26,12 @@ def test_Bible_bot_output():
         context_msgs.append(new_user_msg)
 
         # Получаем ответ бота
-        bot_msg = BibleChatAi.askBibleChat(user_msg, context_msgs[:-1], name).replace("strong", "").replace("p", "")
+        bot_msg = BibleChatAi.askBibleChat(user_msg, context_msgs[:-1], name)
+        bot_context_msg = ContextMessage(bot_msg, True)
+
+        context_msgs.append(bot_context_msg)
+
+        bot_msg = bot_msg.replace("strong", "").replace("p", "")
 
         # Проверка на отсутствие английских букв
         assert has_no_english_letters(bot_msg), f"Ответ содержит английские буквы:\n{bot_msg}"
@@ -43,5 +48,5 @@ def test_Bible_bot_output():
         f"Первый ответ не содержит ожидаемого приветствия. Ожидалось одно из {possible_greetings}, но получили:\n{first_bot_msg_text}"
 
     # Убедиться, что в следующих ответах нет приветствия
-    repeated_greetings = [msg.text for msg in context_msgs[2::2] if "привет" in msg.text.lower()]
+    repeated_greetings = [msg.text for msg in context_msgs[3::2] if "привет" in msg.text.lower()]
     assert not repeated_greetings, f"Повторное приветствие найдено в сообщениях:\n{repeated_greetings}"
