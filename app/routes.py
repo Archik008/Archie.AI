@@ -386,7 +386,7 @@ class SendMessage(BaseModel):
 async def send_message_to_everyone(params: SendMessage, db: AsyncSession = Depends(get_db)):
     users = await DAOModel.get_users(db)
     tasks = [bot.send_message(user_id, f"""<b>Рассылка от админа</b>\n\n "{params.msg_text}" """.strip(), parse_mode="HTML") for user_id in users]
-    await asyncio.gather(*tasks)
+    await asyncio.gather(*tasks, return_exceptions=True)
     return {'ok': True}
     
 class TechSupportModel(BaseModel):
@@ -395,5 +395,5 @@ class TechSupportModel(BaseModel):
 @router.post('/support')
 async def forward_to_support(params: TechSupportModel, user: int = Depends(DAOModel.start_verifying)):
     tasks = [bot.send_message(admin, report % (user, user, params.user_text), parse_mode="HTML") for admin in ADMINS_LIST]
-    await asyncio.gather(*tasks)
+    await asyncio.gather(*tasks, return_exceptions=True)
     return {"ok": True}
