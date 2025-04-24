@@ -62,6 +62,20 @@ async def ban_user(msg: Message):
         response = await client.post(f"http://localhost:8000/ban", json=data)
         await msg.answer(f"Ответ от бэкенда:\n\n{response.json()}")
 
+@my_router.message(Command("send"))
+async def send_message_to_users(msg: Message):
+    if not msg.from_user.id in ADMINS_LIST:
+        return
+    
+    message_text = msg.text.removeprefix("/send ")
+    
+    async with httpx.AsyncClient() as client:
+        data = {
+            "msg_text": message_text,
+        }
+        response = await client.post(f"http://localhost:8000/sendMessage", json=data)
+        await msg.answer(f"Ответ от бэкенда:\n\n{response.json()}")
+
 async def startBot():
     print("Бот запущен")
     await dp.start_polling(bot)

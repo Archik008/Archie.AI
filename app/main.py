@@ -12,14 +12,9 @@ from starlette.responses import FileResponse
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 
-import asyncio
 
-from pydantic import BaseModel
-
-from texts import *
 from database.dao import *
 from fastapi.middleware.cors import CORSMiddleware
-
 
 from starlette.requests import Request
 from fastapi.staticfiles import StaticFiles
@@ -57,19 +52,10 @@ app.mount("/assets", StaticFiles(directory=os.path.join(frontend_dist, 'assets')
 app.mount("/css", StaticFilesWithoutCaching(directory=os.path.join(frontend_dist, 'css')), name="css")
 app.mount("/js", StaticFilesWithoutCaching(directory=os.path.join(frontend_dist, 'js')), name="js")
 
-class TechSupportModel(BaseModel):
-    user_text: str
-
 @app.exception_handler(InfoUserException)
 async def wrap_info_user_exc(request, exc: InfoUserException):
     exception = jsonable_encoder(InfoUserModel(status_code=exc.status_code, title=exc.title, detail=exc.detail))
     return JSONResponse(status_code=exc.status_code, content=exception)
-
-@app.post('/support')
-async def forward_to_support(params: TechSupportModel, user: int = Depends(DAOModel.start_verifying)):
-    tasks = [bot.send_message(admin, report % (user, user, params.user_text), parse_mode="HTML") for admin in ADMINS_LIST]
-    await asyncio.gather(*tasks)
-    return {"ok": True}
 
 @app.post("/webhook")
 async def webhook(request: Request, db: AsyncSession = Depends(get_db)) -> None:

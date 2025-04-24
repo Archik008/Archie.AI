@@ -3,7 +3,7 @@ from sqlalchemy.orm import selectinload
 from database.database import get_db
 from fastapi import Depends, HTTPException, Header, status
 from database.models import *
-from configure.pyconfig import WHITE_LIST
+from configure.pyconfig import WHITE_LIST, ADMINS_LIST
 from ai_dir.ai import QuizAi, BibleChatAi
 from encryption.encrypt import is_safe
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -343,6 +343,15 @@ class DAOModel:
         await db.commit()
 
         return {"daily_verse": {"title": verse_model.title, "verse": verse_model.verse}}
+    
+    @staticmethod
+    async def get_users(db: AsyncSession):
+        users_search = await db.execute(select(User.id).where(User.id.not_in(ADMINS_LIST)))
+        if len(ADMINS_LIST) < 1:
+            users_search = await db.execute(select(User.id))
+        users = users_search.scalars().all()
+        return users
+
 
 class ContextMessage:
     def __init__(self, text, is_bot):

@@ -13,10 +13,15 @@ from fastapi_models.schemas import *
 
 from database.dao import *
 
-from configure.pyconfig import ADMIN_ID, WHITE_LIST, AI_TEST_TOPICS, PASSWORD
+from configure.pyconfig import ADMIN_ID, WHITE_LIST, AI_TEST_TOPICS, PASSWORD, ADMINS_LIST
 
-from bot import create_invoice_link_bot
+from bot import create_invoice_link_bot, bot
 from ai_dir.ai import BibleChatAi
+
+import asyncio
+
+from texts import *
+
 
 router = APIRouter()
 
@@ -30,11 +35,9 @@ class InfoUserModel(BaseModel):
     title: str
     detail: str
 
-TEST_PASSWORD = "kljfgb23uyf234huifh23789f32hji"
-
 @router.get("/test_connection")
 async def test_connection(password: str):
-    if password != TEST_PASSWORD:
+    if password != PASSWORD:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "not allowed!")
     return {"status": "congratulations!! You setupped an app;)"}
 
@@ -374,4 +377,23 @@ async def ban_user(params: BanUserClass, db: AsyncSession = Depends(get_db)):
     if params.password != PASSWORD:
         raise HTTPException(status_code=status.HTTP_418_IM_A_TEAPOT, detail="Доступ запрещен!!")
     await DAOModel.add_banned_users(params.list_users, db)
+    return {"ok": True}
+
+class SendMessage(BaseModel):
+    msg_text: str
+
+@router.post("/sendMessage")
+async def send_message_to_everyone(params: SendMessage, db: AsyncSession = Depends(get_db)):
+    users = await DAOModel.get_users(db)
+    tasks = [bot.send_message(user_id, f"""<b>Рассылка от админа</b>\n\n "{params.msg_text}" """.strip(), parse_mode="HTML") for user_id in users]
+    await asyncio.gather(*tasks)
+    return {'ok': True}
+    
+class TechSupportModel(BaseModel):
+    user_text: str
+
+@router.post('/support')
+async def forward_to_support(params: TechSupportModel, user: int = Depends(DAOModel.start_verifying)):
+    tasks = [bot.send_message(admin, report % (user, user, params.user_text), parse_mode="HTML") for admin in ADMINS_LIST]
+    await asyncio.gather(*tasks)
     return {"ok": True}

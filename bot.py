@@ -76,5 +76,19 @@ async def ban_user(msg: Message):
             "password": PASSWORD,
             "list_users": list_banned_users
         }
-        response = await client.post(f"http://localhost:8000/ban", json=data)
+        response = await client.post(f"{URL}/ban", json=data)
+        await msg.answer(f"Ответ от бэкенда:\n\n{response.json()}")
+
+@my_router.message(Command("send"))
+async def send_message_to_users(msg: Message):
+    if not msg.from_user.id in ADMINS_LIST:
+        return
+    
+    message_text = msg.text.removeprefix("/send ")
+    
+    async with httpx.AsyncClient() as client:
+        data = {
+            "msg_text": message_text,
+        }
+        response = await client.post(f"{URL}/sendMessage", json=data)
         await msg.answer(f"Ответ от бэкенда:\n\n{response.json()}")
