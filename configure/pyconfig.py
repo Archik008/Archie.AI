@@ -24,4 +24,4 @@ MODE = "PROD"
 
 PROJ_LOG_TOKEN = "pylf_v1_eu_TYQsz5bxk1YhmxmRyHYRWkl4QKSsT76kd9xFf3ZT61Jq"
 
-QDRANT_HOST = "localhost"
+QDRANT_HOST = ":memory:"
