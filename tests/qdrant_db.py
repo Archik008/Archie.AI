@@ -1,10 +1,11 @@
 from qdrant_client import QdrantClient, models
 from qdrant_client.http.exceptions import UnexpectedResponse
 from sentence_transformers import SentenceTransformer
+from configure.pyconfig import QDRANT_HOST
 
 class QdrantTesting:
     def __init__(self):
-        self.client = QdrantClient(host="localhost", port=6333)
+        self.client = QdrantClient(host=QDRANT_HOST, port=6333)
         self.model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
         self.vectors = None
 
