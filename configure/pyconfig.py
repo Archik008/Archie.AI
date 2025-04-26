@@ -18,8 +18,10 @@ PASSWORD = "jkbsfb123t78fd312iuf3h2187"
 
 BANNED_USERS = [7413826637, 7507257106]
 
-NGROK_URL = "https://91ba-37-32-73-239.ngrok-free.app"
+NGROK_URL = "https://175d-37-32-73-239.ngrok-free.app"
 
 MODE = "PROD"
 
 PROJ_LOG_TOKEN = "pylf_v1_eu_TYQsz5bxk1YhmxmRyHYRWkl4QKSsT76kd9xFf3ZT61Jq"
+
+QDRANT_HOST = "localhost"

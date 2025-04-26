@@ -140,14 +140,20 @@ class DAOModel:
         return userId
     
     @staticmethod
+    async def get_passed_questions(userId, db: AsyncSession):
+        questions_search = await db.execute(select(PassedQuestions.question_name).filter(PassedQuestions.userId == userId))
+        results_questions = questions_search.scalars().all()
+        return results_questions
+    
+    @staticmethod
     async def make_quiz(userId, topic, db: AsyncSession):
         my_points = 6
 
-        questions_search = await db.execute(select(PassedQuestions.question_name).filter(PassedQuestions.userId == userId))
-        results_questions = questions_search.scalars().all()
-        results_questions = "\n".join([f"""     -{question_db}"""  for question_db in results_questions])
+        prev_questions = await DAOModel.get_passed_questions(userId, db)
+    
+        prev_questions = [" ".join(question.split()[1:]) for question in prev_questions]
 
-        quiz_title, questions_answers = QuizAi.makeQuizAi(my_points, topic, results_questions)
+        quiz_title, questions_answers = QuizAi.makeQuizAi(my_points, topic, prev_questions)
 
         new_quiz = Quiz(
             userId=userId,

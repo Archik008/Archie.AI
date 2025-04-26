@@ -96,20 +96,24 @@ class BibleChatAi:
     def askBibleChat(user_msg: str, context_msgs: list, user_name):
         context_role = BibleChatAi.role_bot % user_name
 
-        if len(context_msgs) > 1:
-            context_role += "\n**Вот предыдущие сообщения**:\n"
-            for context_msg in context_msgs:
-                cur_msg = f'- Твое сообщение: "{context_msg.text}"'
-                if not context_msg.is_bot:
-                    cur_msg = cur_msg.replace("Твое сообщение", "Сообщение пользователя", 1)
-                context_role += cur_msg + "\n"    
+        messages = [{"role": "system", "content": context_role}]
+
+        for context_msg in context_msgs:
+            msg_to_bot = {}
+            if context_msg.is_bot:
+                cur_msg = f'Твое сообщение: "{context_msg.text}"'
+                msg_to_bot["role"] = "assistant"
+            else:
+                cur_msg = f"Сообщение пользователя: {context_msg.text}"
+                msg_to_bot["role"] = "user"
+            msg_to_bot["content"] = cur_msg
+            messages.append(msg_to_bot)
+
+        messages.append({"role": "user", "content": user_msg})
 
         response = openai.chat.completions.create(
             model="gpt-4.1-mini",
-            messages=[
-                {"role": "system", "content": context_role},
-                {"role": "user", "content": user_msg}
-            ]
+            messages=messages
         )
         ai_answer = response.choices[0].message.content
         return BibleChatAi.format_bible_answer(ai_answer)
@@ -208,22 +212,33 @@ N. Текст вопроса:
 Создай короткую, точную, канонически верную викторину по Библии без лишнего текста. Используй только чистый русский литературный язык.
 """    
 
-
     @staticmethod
-    def makeQuizAi(count_questions, theme, prev_questions: list = None):
+    def makeQuizAi(count_questions, theme, prev_questions: list) -> dict:
         content_sys = QuizAi.role_quiz_maker % (theme, count_questions)
-        if prev_questions:
-            content_sys += "\n\n⚠️ **Вопросы из старых викторин:**\n"
 
+        messages = [{"role": "system", "content": content_sys}]
+
+        if prev_questions:
+            restricted_questions_title = "⚠️ Не используй в викторине эти вопросы:\n"
+            part_of_prompt = {"role": "user", "content": restricted_questions_title}
+            count = 0
             for question in prev_questions:
-                content_sys += f"    - {question}\n"
+                if count <= 60:
+                    part_of_prompt['content'] += f"- {question}\n"
+                    count += 1
+                else:
+                    count = 0
+                    messages.append(part_of_prompt)
+
+            if part_of_prompt not in messages:
+                part_of_prompt['content'] = part_of_prompt["content"].strip()
+                messages.append(part_of_prompt)
         
         response = openai.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=[
-                {"role": "system", "content": content_sys}
-            ]
+            model="gpt-4.1-mini",
+            messages=messages
         )
+
         quiz_text = response.choices[0].message.content
         return QuizAi.parse_quiz(quiz_text, theme)
 
@@ -233,6 +248,8 @@ N. Текст вопроса:
         current_question = None
         current_number = None
         quiz_title = ""
+
+        questions = []
 
         for line in lines:
             line = line.strip()
@@ -247,6 +264,7 @@ N. Текст вопроса:
             if question_match:
                 current_number = int(question_match.group(1))
                 current_question = question_match.group(2).strip()
+                questions.append(current_question)
                 key = f"{current_number}. {current_question}"
                 questions_answers[theme][key] = {}
                 continue

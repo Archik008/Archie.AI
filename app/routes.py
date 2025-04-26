@@ -18,7 +18,7 @@ from configure.pyconfig import ADMIN_ID, WHITE_LIST, AI_TEST_TOPICS, PASSWORD, A
 from bot import create_invoice_link_bot, bot
 from ai_dir.ai import BibleChatAi
 
-import asyncio
+import asyncio, traceback
 
 from texts import *
 
@@ -159,6 +159,7 @@ async def set_chat_title(chat_id: int, user_msg: str, userId: int  = Depends(DAO
         except RateLimitError:
             raise InfoUserException(status_code=500, detail="Превышен лимит запросов или закончилась квота. Отправь эту ошибку нам в чат.", title="Лимит запросов")
         except Exception as e:
+            traceback.print_exc()
             raise InfoUserException(status_code=501, detail=f"Неизвестная ошибка: {e}. Отправь скриншот ошибки в наш телеграм чат", title="Неизвестная ошибка")
 
         result.title = chat_title
@@ -192,6 +193,7 @@ async def getBotMsg(chat_id: int, userId: int = Depends(DAOModel.start_verifying
     except RateLimitError:
         raise InfoUserException(status_code=500, detail="Превышен лимит запросов или закончилась квота. Отправь скриншот нам в чат", title="Лимит запросов")
     except Exception as e:
+        traceback.print_exc()
         raise InfoUserException(status_code=501, detail=f"Неизвестная ошибка: {e}. Отправь скриншот ошибки в наш телеграм чат", title="Неизвестная ошибка")
 
     msg = Message(userId=userId, chatId=chat_id, text=bot_msg_text, 
@@ -261,6 +263,7 @@ async def create_quiz(params: PostQuiz, user: int = Depends(DAOModel.start_verif
     except RateLimitError:
         raise InfoUserException(status_code=500, detail="Превышен лимит запросов или закончилась квота. Отправь скриншот ошибки нам в чат", title="Лимит запросов")
     except Exception as e:
+        traceback.print_exc()
         raise InfoUserException(status_code=501, detail=f"Неизвестная ошибка: {e}. Отправь скриншот ошибки в наш телеграм чат", title="Неизвестная ошибка")
     
     is_subscribed  = await DAOModel.is_subscribed(user, db)
@@ -354,6 +357,7 @@ async def get_daily_verse(user_id: int = Depends(DAOModel.start_verifying), db: 
     except RateLimitError:
         raise InfoUserException(status_code=500, detail="Превышен лимит запросов или закончилась квота. Отправь скриншот ошибки нам в чат.", title="Лимит запросов")
     except Exception as e:
+        traceback.print_exc()
         raise InfoUserException(status_code=501, detail=f"Неизвестная ошибка: {e}. Отправь скриншот ошибки в наш телеграм чат", title="Неизвестная ошибка")
     return getting_daily_verse
 
