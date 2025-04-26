@@ -5,7 +5,7 @@ from configure.pyconfig import QDRANT_HOST
 
 class QdrantTesting:
     def __init__(self):
-        self.client = QdrantClient(host=QDRANT_HOST, port=6333)
+        self.client = QdrantClient(QDRANT_HOST)
         self.model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
         self.vectors = None
 
