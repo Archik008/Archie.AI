@@ -19,18 +19,23 @@ jobs:
         with:
           python-version: '3.13'
 
+      - name: 📄 Install system packages (for qdrant-client)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libssl-dev libclang-dev
+
       - name: 🗃️ Cache dependencies
         uses: actions/cache@v3
         with:
           path: ~/.cache/pip
-          key: pip-${{ hashFiles('requirements.txt') }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
           restore-keys: |
-            pip-
+            ${{ runner.os }}-pip-
 
       - name: 🧪 Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install fastapi[all] pytest pytest-asyncio sqlalchemy openai aiogram sentence-transformers asyncpg
+          pip install -r requirements.txt
 
       - name: ✅ Run tests
         run: |
