@@ -1,15 +1,25 @@
-# Используем официальный Python образ
+# Используем официальный Python образ на базе Alpine
 FROM python:3.13.3-alpine
 
 # Устанавливаем рабочую директорию
 WORKDIR /app
 
-# Копируем зависимости и устанавливаем
+# Устанавливаем необходимые пакеты для сборки и системные библиотеки
+RUN apk update && apk add \
+    libssl3 \
+    libssl-dev \
+    clang \
+    llvm-dev \
+    musl-dev \
+    gcc \
+    g++ \
+    make
+# Копируем файл зависимостей и устанавливаем Python-зависимости
 COPY requirements.txt .
-RUN pip install -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Копируем исходники
+# Копируем все остальные файлы проекта
 COPY . .
 
-# Указываем команду по умолчанию (переопределим в docker-compose)
+# Указываем команду по умолчанию
 CMD ["python", "main.py"]
