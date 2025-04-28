@@ -1,21 +1,25 @@
-FROM python:3.13.3-slim
+# Используем официальный Python образ на базе Alpine
+FROM python:3.13.3-alpine
 
+# Устанавливаем рабочую директорию
 WORKDIR /app
 
-# Установка системных библиотек
-RUN apt-get update && apt-get install -y --no-install-recommends \
+# Устанавливаем необходимые пакеты для сборки и системные библиотеки
+RUN apk update && apk add --no-cache \
     libffi-dev \
-    libssl-dev \
+    openssl-dev \
     clang \
     llvm-dev \
+    musl-dev \
     gcc \
     g++ \
-    make \
-    && rm -rf /var/lib/apt/lists/*
-
+    make
+# Копируем файл зависимостей и устанавливаем Python-зависимости
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Копируем все остальные файлы проекта
 COPY . .
 
+# Указываем команду по умолчанию
 CMD ["python", "main.py"]
