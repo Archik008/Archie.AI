@@ -53,7 +53,7 @@ services:
       - .:/app
     command: ["alembic", "upgrade", "head"]
     environment:
-      - PATH=/directory/bin:$PATH
+      - PATH=/usr/local/bin:$PATH
 
 volumes:
   pg_data:
