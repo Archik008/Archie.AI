@@ -2,7 +2,6 @@ import openai
 import re
 from configure.pyconfig import API_KEY
 
-
 openai.api_key = API_KEY
 
 class BibleChatAi:
@@ -215,7 +214,7 @@ N. Текст вопроса:
 
         messages = [{"role": "system", "content": content_sys}]
 
-        if prev_questions:
+        if len(prev_questions) > 0:
             restricted_questions_title = "⚠️ Не используй в викторине эти вопросы:\n"
             part_of_prompt = {"role": "user", "content": restricted_questions_title}
             count = 0
