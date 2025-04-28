@@ -5,8 +5,7 @@ FROM python:3.13.3-alpine
 WORKDIR /app
 
 # Копируем зависимости и устанавливаем
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install fastapi[all] pytest pytest-asyncio sqlalchemy openai aiogram sentence-transformers
 
 # Копируем исходники
 COPY . .
