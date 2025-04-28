@@ -1,10 +1,8 @@
 qdrant-client
-sentence-transformers==2.2.2
-scikit-learn
-torch==2.1.0+cpu -f https://download.pytorch.org/whl/cpu/torch_stable.html
-fastapi[all]
+sentence-transformers
 pytest
 pytest-asyncio
+fastapi[all]
 sqlalchemy
 openai
 aiogram
