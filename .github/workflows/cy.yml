@@ -24,13 +24,11 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libssl-dev libclang-dev
 
-      - name: 🗃️ Cache dependencies
+      - name: Cache dependencies
         uses: actions/cache@v3
         with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('requirements-test.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
+            path: ~/.cache/pip
+            key: pip-${{ hashFiles('requirements-test.txt') }}
 
       - name: 🧪 Install dependencies
         run: |
