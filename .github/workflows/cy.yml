@@ -50,5 +50,5 @@ jobs:
           script: |
             cd Archie.AI
             git pull
-            docker compose down
+            docker compose down --remove-orphans
             docker compose up -d --build
