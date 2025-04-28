@@ -14,6 +14,7 @@ RUN apk update && apk add --no-cache \
     gcc \
     g++ \
     make
+    
 # Копируем файл зависимостей и устанавливаем Python-зависимости
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
