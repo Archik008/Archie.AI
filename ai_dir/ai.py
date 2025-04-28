@@ -228,7 +228,6 @@ N. Текст вопроса:
                     part_of_prompt["content"] = ""
 
             if part_of_prompt not in messages:
-                part_of_prompt['content'] = part_of_prompt["content"].strip()
                 messages.append(part_of_prompt)
         
         response = openai.chat.completions.create(
@@ -275,6 +274,3 @@ N. Текст вопроса:
                 questions_answers[theme][key][answer_text] = is_correct
 
         return quiz_title, questions_answers
-
-if __name__ == '__main__':
-    pass
