@@ -52,8 +52,6 @@ services:
     volumes:
       - .:/app
     command: ["alembic", "upgrade", "head"]
-    environment:
-      - PATH=/usr/local/bin:$PATH
 
 volumes:
   pg_data:
