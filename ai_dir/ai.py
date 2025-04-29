@@ -2,6 +2,8 @@ import openai
 import re
 from configure.pyconfig import API_KEY
 
+import logging
+
 openai.api_key = API_KEY
 
 class BibleChatAi:
@@ -37,7 +39,7 @@ class BibleChatAi:
 📖 **Цитаты из Библии:**
 - Фразы вроде *«в Евангелии говорится», «в Псалтири сказано»* должны быть **включены в тот же абзац**, где находится сама цитата.
 - Не начинай с таких фраз отдельный абзац.
-- Следуй этому образцу:
+- Следуй этому образцу и **обязательно используй звездочки как здесь**:
   --Абзац-- В **Псалме 55:23** сказано: "Брось на Господа бремя твое, и Он поддержит тебя..."
 
 🔎 **Ссылки на библейские книги:**
@@ -91,6 +93,7 @@ class BibleChatAi:
 """
     @staticmethod
     def askBibleChat(user_msg: str, context_msgs: list, user_name):
+
         context_role = BibleChatAi.role_bot % user_name
 
         messages = [{"role": "system", "content": context_role}]
@@ -107,11 +110,15 @@ class BibleChatAi:
 
         messages.append({"role": "user", "content": user_msg})
 
+        logging.info(messages)
+
         response = openai.chat.completions.create(
             model="gpt-4.1-mini",
             messages=messages
         )
+
         ai_answer = response.choices[0].message.content
+        # logging.info(f"Ответ нейронки: {ai_answer}")
         return BibleChatAi.format_bible_answer(ai_answer)
     
     @staticmethod
@@ -230,6 +237,8 @@ N. Текст вопроса:
             if part_of_prompt not in messages:
                 messages.append(part_of_prompt)
         
+        logging.info(f"Вот сообщения: {messages}")
+                
         response = openai.chat.completions.create(
             model="gpt-4.1-mini",
             messages=messages

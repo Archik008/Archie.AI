@@ -1,7 +1,8 @@
 from ai_dir.ai import BibleChatAi
 from database.dao import ContextMessage
 
-import re
+import re, logging
+
 
 def has_no_english_letters(text: str) -> bool:
     """
@@ -10,8 +11,12 @@ def has_no_english_letters(text: str) -> bool:
     """
     return re.search(r'[a-zA-Z]', text) is None
 
-def test_Bible_bot_output():
+def test_Bible_bot_output(caplog):
+
+    caplog.set_level(logging.INFO)
+
     name = "Артeм"
+
     example_inputs = [
         "Привет, как мне избавиться от гнева?",
         "Как мне преодолеть страх?",
@@ -20,28 +25,22 @@ def test_Bible_bot_output():
     ]
     context_msgs = []
 
-    for i, user_msg in enumerate(example_inputs):
-        # Добавляем сообщение пользователя
-        new_user_msg = ContextMessage(user_msg, False)
-        context_msgs.append(new_user_msg)
-
-        # Получаем ответ бота
-        bot_msg = BibleChatAi.askBibleChat(user_msg, context_msgs[:-1], name)
-
-        assert "strong" in bot_msg, "Нету тега strong в сообщении бота"
+    for user_msg in example_inputs:
+        bot_msg = BibleChatAi.askBibleChat(user_msg, context_msgs, name)
 
         bot_context_msg = ContextMessage(bot_msg, True)
 
-        context_msgs.append(bot_context_msg)
+        assert "strong" in bot_msg, "Нету тега strong в сообщении бота"
+        assert "p" in bot_msg, "Нету тега p в сообщении бота"
 
-        bot_msg = bot_msg.replace("strong", "").replace("p", "")
+        bot_msg = bot_msg.replace("strong", "").replace("p", "").replace("\n", "")
 
-        # Проверка на отсутствие английских букв
         assert has_no_english_letters(bot_msg), f"Ответ содержит английские буквы:\n{bot_msg}"
 
-        # Добавляем ответ бота в контекст
-        context_bot_msg = ContextMessage(bot_msg, True)
-        context_msgs.append(context_bot_msg)
+        new_user_msg = ContextMessage(user_msg, False)
+        context_msgs.append(new_user_msg)
+
+        context_msgs.append(bot_context_msg)
 
     # Проверка приветствия в первом ответе бота
     first_bot_msg_text = context_msgs[1].text.lower()

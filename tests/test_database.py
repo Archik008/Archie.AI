@@ -4,7 +4,7 @@ from database.models import Base
 
 DATABASE_URL = "sqlite+aiosqlite:///:memory:"
 
-engine_test = create_async_engine(DATABASE_URL, echo=True)
+engine_test = create_async_engine(DATABASE_URL, echo=False)
 TestSessionLocal = sessionmaker(engine_test, class_=AsyncSession, expire_on_commit=False)
 
 async def override_get_db():
