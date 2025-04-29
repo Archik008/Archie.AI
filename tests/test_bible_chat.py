@@ -27,6 +27,9 @@ def test_Bible_bot_output():
 
         # Получаем ответ бота
         bot_msg = BibleChatAi.askBibleChat(user_msg, context_msgs[:-1], name)
+
+        assert "strong" in bot_msg, "Нету тега strong в сообщении бота"
+
         bot_context_msg = ContextMessage(bot_msg, True)
 
         context_msgs.append(bot_context_msg)
