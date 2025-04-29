@@ -15,7 +15,7 @@ def test_Bible_bot_output(caplog):
 
     caplog.set_level(logging.INFO)
 
-    name = "Артeм"
+    name = "Артем"
 
     example_inputs = [
         "Привет, как мне избавиться от гнева?",

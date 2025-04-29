@@ -5,7 +5,7 @@ def main():
     # quiz = QuizAi.makeQuizAi(6, "Новый Завет", prev_questions)
 
     # print(quiz)
-    bot_output = BibleChatAi.askBibleChat("Привет! Как мне преодолеть похоть?", [], "Артем")
+    bot_output = BibleChatAi.askBibleChat("Привет, как мне избавиться от гнева?", [], "Артем")
 
     print(bot_output)
 
