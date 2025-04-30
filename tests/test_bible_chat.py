@@ -40,8 +40,7 @@ def test_Bible_bot_output(caplog):
 
         bot_context_msg = ContextMessage(bot_msg, True)
 
-        if not i == len(example_inputs) - 1:
-            assert "strong" in bot_msg, "Нету тега strong в сообщении бота"
+        assert "strong" in bot_msg, "Нету тега strong в сообщении бота"
         assert "p" in bot_msg, "Нету тега p в сообщении бота"
 
         bot_msg = bot_msg.replace("strong", "").replace("p", "").replace("\n", "")
