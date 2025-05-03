@@ -47,6 +47,6 @@ jobs:
           key: ${{ secrets.VPS_PRIVATE_KEY }}
           script: |
             cd Archie.AI
-            git pull
             docker compose down --remove-orphans
+            git pull
             docker compose up -d --build
