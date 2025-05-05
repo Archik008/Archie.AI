@@ -153,7 +153,7 @@ class DAOModel:
     
         prev_questions = [" ".join(question.split()[1:]) for question in prev_questions]
 
-        quiz_title, questions_answers = QuizAi.makeQuizAi(my_points, topic, prev_questions)
+        quiz_title, questions_answers = await QuizAi.makeQuizAi(my_points, topic, prev_questions)
 
         new_quiz = Quiz(
             userId=userId,
@@ -336,7 +336,7 @@ class DAOModel:
         now_date = datetime.now().date()
 
         if not verse_model:
-            verse, verse_title = BibleChatAi.getDailyVerse()
+            verse, verse_title = await BibleChatAi.getDailyVerse()
             verse_model = await add_new_user_verse_model(verse, verse_title)
         elif verse_model.updated_at and verse_model.updated_at.date() < now_date:
             verse, verse_title = BibleChatAi.getDailyVerse()

@@ -1,14 +1,10 @@
 from fastapi import APIRouter
 
-from fastapi import Depends, HTTPException, status
 from openai import RateLimitError
 
-from sqlalchemy import select, update, delete, and_
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import delete
 
-from database import *
 from fastapi_models.fastapi_models import *
-from database.models import *
 from fastapi_models.schemas import *
 
 from database.dao import *
@@ -155,7 +151,7 @@ async def set_chat_title(chat_id: int, user_msg: str, userId: int  = Depends(DAO
     
     if not result.title:
         try:
-            chat_title = BibleChatAi.setTitleChat(user_msg)
+            chat_title = await BibleChatAi.setTitleChat(user_msg)
         except RateLimitError:
             raise InfoUserException(status_code=500, detail="Превышен лимит запросов или закончилась квота. Отправь эту ошибку нам в чат.", title="Лимит запросов")
         except Exception as e:

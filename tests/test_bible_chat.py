@@ -1,8 +1,7 @@
 from ai_dir.ai import BibleChatAi
 from database.dao import ContextMessage
 
-import re, logging
-
+import re, logging, pytest
 
 def has_no_english_letters(text: str) -> bool:
     """
@@ -17,7 +16,8 @@ def is_list_used(text: str) -> bool:
     """
     return bool(re.search(r'--Абзац--\s*\d+\.', text))
 
-def test_Bible_bot_output(caplog):
+@pytest.mark.asyncio
+async def test_Bible_bot_output(caplog):
 
     caplog.set_level(logging.INFO)
 
@@ -34,7 +34,7 @@ def test_Bible_bot_output(caplog):
     list_usage_count = 0
 
     for i, user_msg in enumerate(example_inputs):
-        bot_msg = BibleChatAi.askBibleChat(user_msg, context_msgs, name)
+        bot_msg = await BibleChatAi.askBibleChat(user_msg, context_msgs, name)
         if is_list_used(bot_msg):
             list_usage_count += 1
 
