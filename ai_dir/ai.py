@@ -139,21 +139,21 @@ class BibleChatAi:
         ai_answer = await send_ai_request(GPT_4_1_MINI, messages)
 
         return BibleChatAi.format_bible_answer(ai_answer)
-    
+
     @staticmethod
     def format_bible_answer(text):
         # Заменяем звездочки на теги <strong>
         text = re.sub(r'\*\*(.*?)\*\*', r'<strong>\1</strong>', text)
-        
+
         # Заменяем каждый --Абзац-- на <p> и заключаем каждый абзац в тег <p></p>
         paragraphs = text.split('--Абзац--')
-        
+
         # Оформляем каждый абзац в <p></p> и убираем лишние пробелы
         paragraphs = ['<p>' + para.strip() + '</p>' for para in paragraphs if para.strip()]
-        
+
         # Склеиваем все абзацы обратно в один текст
         return '\n\n'.join(paragraphs)
-    
+
     @staticmethod
     async def setTitleChat(user_msg):
         messages = [
@@ -161,7 +161,7 @@ class BibleChatAi:
                 {"role": "user", "content": user_msg}
             ]
         return await send_ai_request(GPT_4_O_MINI, messages)
-    
+
     @staticmethod
     async def getDailyVerse():
         messages = [
@@ -180,7 +180,7 @@ class BibleChatAi:
                 verse_title = parts_of_part[1]
 
         return verse.strip(), verse_title
-    
+
 class QuizAi:
     role_quiz_maker = """Ты — помощник по созданию викторин по Библии.
 
@@ -273,7 +273,7 @@ N. Текст вопроса:
 
             if count > 0:
                 messages.append(part_of_prompt)
-        
+
         # logging.info(f"Вот сообщения: {messages}")
 
         quiz_text = await send_ai_request(GPT_4_1_MINI, messages)

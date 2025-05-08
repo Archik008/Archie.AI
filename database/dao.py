@@ -167,7 +167,7 @@ class DAOModel:
         await db.flush()
 
         dict_question_answers = None
-        
+
         # Проход по вопросам выбранной темы
         quiz_questions = questions_answers.get(topic, {})
 
@@ -202,21 +202,21 @@ class DAOModel:
         await db.commit()
 
         return dict_question_answers
-    
+
     @staticmethod
     async def get_quizes_db(userId, db: AsyncSession):
         search_quizes = await db.execute(select(Quiz).filter(Quiz.userId == userId).options(selectinload(Quiz.questions)))
         result_quizes = search_quizes.scalars().all()
 
         ls_quiz = [{"id": quiz.id, "title": quiz.title, "points": quiz.points, "max_points": quiz.max_points} for quiz in result_quizes if quiz.points != quiz.max_points and any(not question.answered for question in quiz.questions)]
-        
+
         return ls_quiz
-    
+
     @staticmethod
     async def get_caption(userId, userText, db: AsyncSession):
         if not await DAOModel.is_premium(userId, db) and userId not in WHITE_LIST:
             return
-        
+
         listCaptions = ['Как довериться Богу', "Заповедь Божья", "Вера в Бога"]
 
         caption = random.choice(listCaptions)
@@ -258,7 +258,7 @@ class DAOModel:
 
         if not result:
             raise HTTPException(404, "not found question")
-                
+
         return result, result.answers
 
     @staticmethod
@@ -267,7 +267,7 @@ class DAOModel:
         result_questions = questions_search.scalars().all()
         if len(result_questions) == 0:
             raise HTTPException(404, "not found")
-        
+
         is_passed = all(question.answered for question in result_questions)
 
         return is_passed
@@ -281,9 +281,9 @@ class DAOModel:
 
         if not result_quiz:
             raise HTTPException(404, "not found quizes")
-        
+
         return {"answers": [{"id": answer.id, "text": answer.answer} for answer in result_answers], "question": {"text": result_question.question, "id": result_question.id}, "quiz": {"points": result_quiz.points, "max_points": result_quiz.max_points}}
-    
+
     @staticmethod
     async def answer_question_db(user, params: AnswerQuestionClass, db: AsyncSession):
         quiz_search = await db.execute(select(Quiz).where(and_(Quiz.userId == user, Quiz.id == params.quiz_id)))
@@ -319,11 +319,11 @@ class DAOModel:
         question.answered = True
 
         await db.flush()
-        
+
         await db.commit()
 
         return {"correct_answers": [{"id": answer.id} for answer in question.answers if answer.is_true], "quiz": {"points": result_quiz.points, "max_points": result_quiz.max_points}}
-    
+
     @staticmethod
     async def get_new_daily_verse(userId, db: AsyncSession):
         async def add_new_user_verse_model(daily_verse, verse_title):

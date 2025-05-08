@@ -30,7 +30,7 @@ async def test_quiz_ai():
 
     qdrant.create_collection(COLLECTION_NAME, prev_questions)
     qdrant.insert_data(COLLECTION_NAME, prev_questions)
-    
+
     title, prev_questions_quiz = await QuizAi.makeQuizAi(6, topic, prev_questions)
     get_quiz_with_prev_questions = prev_questions_quiz.get(topic)
 

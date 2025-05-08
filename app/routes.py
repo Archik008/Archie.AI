@@ -53,7 +53,7 @@ async def add_new_user(user: NewUser, userId: int = Depends(DAOModel.start_verif
         userName=user.username,
         is_admin=isAdmin
         )
-    
+
     db.add(new_user)
 
     await db.commit()
@@ -67,7 +67,7 @@ async def checkUser(userId: int = Depends(DAOModel.start_verifying), db: AsyncSe
     if not is_exists:
         return {"is_new": True}
     return {"is_new": False}
-    
+
 @router.get("/user")
 async def returnUserData(userId: int = Depends(DAOModel.start_verifying), db: AsyncSession = Depends(get_db)):
     user = await db.execute(select(User).where(User.id == userId))
@@ -77,7 +77,7 @@ async def returnUserData(userId: int = Depends(DAOModel.start_verifying), db: As
 
     if result:
         return {"username": result.userName, "attempts": result.attempts}
-    
+
     raise HTTPException(404)
 
 @router.put("/new_username")
@@ -110,7 +110,7 @@ async def sendMsg(msg_data: NewMessage, userId: int = Depends(DAOModel.start_ver
     is_exists = await DAOModel.is_user_exists(userId, db)
     if not is_exists:
         raise HTTPException("no user!", 404)
-    
+
     is_subscribed = await DAOModel.is_subscribed(userId, db)
     if not userId in WHITE_LIST and not is_subscribed:
         await DAOModel.update_user_attempts(userId, db)
@@ -122,7 +122,7 @@ async def sendMsg(msg_data: NewMessage, userId: int = Depends(DAOModel.start_ver
     chat = await db.get(Chat, cur_chat_id)
 
     if cur_chat_id == -1 or not chat:
-        new_chat = Chat(userId=userId)  
+        new_chat = Chat(userId=userId)
         db.add(new_chat)
         await db.flush()
         cur_chat_id = new_chat.id
@@ -148,7 +148,7 @@ async def set_chat_title(chat_id: int, user_msg: str, userId: int  = Depends(DAO
 
     if not result:
         raise HTTPException(404)
-    
+
     if not result.title:
         try:
             chat_title = await BibleChatAi.setTitleChat(user_msg)
