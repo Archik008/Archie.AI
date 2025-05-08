@@ -185,7 +185,7 @@ async def getBotMsg(chat_id: int, userId: int = Depends(DAOModel.start_verifying
     username = username_search.scalar_one()
 
     try:
-        bot_msg_text = BibleChatAi.askBibleChat(last_msg.text, context_msgs, username)
+        bot_msg_text = await BibleChatAi.askBibleChat(last_msg.text, context_msgs, username)
     except RateLimitError:
         raise InfoUserException(status_code=500, detail="Превышен лимит запросов или закончилась квота. Отправь скриншот нам в чат", title="Лимит запросов")
     except Exception as e:
@@ -203,7 +203,7 @@ async def getBotMsg(chat_id: int, userId: int = Depends(DAOModel.start_verifying
 
 @router.get("/subscribed")
 async def is_premium_endpoint(userId: int = Depends(DAOModel.start_verifying), db: AsyncSession = Depends(get_db)):
-    premium_user = await DAOModel.is_premium(userId, db)
+    premium_user = await DAOModel.is_subscribed(userId, db)
 
     if premium_user:
         return {"status": True}
@@ -266,6 +266,8 @@ async def create_quiz(params: PostQuiz, user: int = Depends(DAOModel.start_verif
     if not user in WHITE_LIST and not is_subscribed:
         await DAOModel.update_user_attempts(user, db)
         await DAOModel.minus_attempts(user, db)
+
+    print(new_quiz)
 
     return new_quiz
 

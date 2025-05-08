@@ -339,7 +339,7 @@ class DAOModel:
             verse, verse_title = await BibleChatAi.getDailyVerse()
             verse_model = await add_new_user_verse_model(verse, verse_title)
         elif verse_model.updated_at and verse_model.updated_at.date() < now_date:
-            verse, verse_title = BibleChatAi.getDailyVerse()
+            verse, verse_title = await BibleChatAi.getDailyVerse()
             verse_model.verse = verse
             verse_model.title = verse_title
             await db.flush()

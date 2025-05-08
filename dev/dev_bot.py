@@ -42,12 +42,12 @@ async def answerWebApp(msg: Message):
         web_app=WebAppInfo(url=quiz_url)
     )
 
-    # Создаем клавиатуру
+    chat = await bot.get_chat(msg.chat.id)
+
     keyboard = InlineKeyboardMarkup(inline_keyboard=[[bible_ai_button], [quiz_ai_button]])
-
     bot_msg = await msg.answer(hello_user, reply_markup=keyboard, parse_mode="HTML")
-
-    await bot.pin_chat_message(bot_msg.chat.id, bot_msg.message_id)
+    if not (hasattr(chat, "pinned_message") and chat.pinned_message):
+        await bot.pin_chat_message(bot_msg.chat.id, bot_msg.message_id)
 
 @my_router.message(Command("ban"))
 async def ban_user(msg: Message):

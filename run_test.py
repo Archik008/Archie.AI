@@ -1,8 +1,10 @@
 from ai_dir.ai import QuizAi, BibleChatAi
+import asyncio
 
-def main():
-    # prev_questions = ["Кто крестил Иисуса?", "Какое первое чудо совершил Иисус?", 'Где родился Иисус?']
-    # quiz = QuizAi.makeQuizAi(6, "Новый Завет", prev_questions)
+async def main():
+    prev_questions = ["Кто крестил Иисуса?", "Какое первое чудо совершил Иисус?", 'Где родился Иисус?']
+    quiz = await QuizAi.makeQuizAi(6, "Новый Завет", prev_questions)
+    print(quiz)
 
     # bot_output = BibleChatAi.askBibleChat("""Если я использую chatgpt в проектах, то будет ли это честно?""", [], "Артем")
     # print(bot_output)
@@ -10,4 +12,4 @@ def main():
     pass
 
 if __name__ == '__main__':
-    main()
+    asyncio.run(main())
