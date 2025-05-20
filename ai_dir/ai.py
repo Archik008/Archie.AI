@@ -165,7 +165,7 @@ class BibleChatAi:
         messages = [
             {"role": "system", "content": BibleChatAi.role_daily_verser}
         ]
-        response_text = await send_ai_request(GPT_4_O_MINI, messages)
+        response_text = await send_ai_request(GPT_4_1_MINI, messages)
         parts = response_text.split("\n")
 
         verse, verse_title = "", ""
