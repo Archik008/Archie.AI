@@ -1,4 +1,4 @@
-from sqlalchemy import select, update, and_
+from sqlalchemy import select, update, and_, desc
 from sqlalchemy.orm import selectinload
 from database.database import get_db
 from fastapi import Depends, HTTPException, Header, status
@@ -234,13 +234,11 @@ class DAOModel:
 
     @staticmethod
     async def get_last_msg(userId, chatId, db: AsyncSession):
-        user_msg_search = await db.execute(select(Message).filter(Message.userId == userId, Message.chatId == chatId))
-        result_msg = user_msg_search.scalars().all()
-        result_msgs = list(result_msg)
-        result_msgs.sort(key=lambda msg: msg.id)
-        if len(result_msgs) == 0:
+        user_msg_search = await db.execute(select(Message).filter(Message.userId == userId, Message.chatId == chatId).order_by(desc(Message.id)))
+        result_msg = user_msg_search.scalars().first()
+        if not result_msg:
             return
-        return result_msgs[-1]
+        return result_msg
 
     @staticmethod
     async def get_question_answers_unanswered(userId, quizId, db: AsyncSession):
@@ -251,6 +249,7 @@ class DAOModel:
                 ~Question.answered,
                 Question.quiz.has(Quiz.userId == userId)  # Оптимизированная проверка связи
             )
+            .order_by(Question.id)
             .options(selectinload(Question.answers))  # Ленивая загрузка ответов
         )
 
