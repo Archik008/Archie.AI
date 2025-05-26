@@ -45,7 +45,7 @@ class StaticFilesWithoutCaching(StaticFiles):
 
 app.include_router(router)
 
-frontend_dist = 'dist'
+frontend_dist = os.path.join(os.path.dirname(__file__), 'dist')
 
 app.mount("/assets", StaticFiles(directory=os.path.join(frontend_dist, 'assets')), name="assets")
 app.mount("/css", StaticFilesWithoutCaching(directory=os.path.join(frontend_dist, 'css')), name="css")
