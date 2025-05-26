@@ -2,13 +2,13 @@ from ai_dir.ai import QuizAi, BibleChatAi
 import asyncio
 
 async def main():
-    # prev_questions = ["Кто крестил Иисуса?", "Какое первое чудо совершил Иисус?", 'Где родился Иисус?']
-    # quiz = await QuizAi.makeQuizAi(6, "Новый Завет", prev_questions)
-    # print(quiz)
+    prev_questions = ["Кто крестил Иисуса?", "Какое первое чудо совершил Иисус?", 'Где родился Иисус?']
+    quiz = await QuizAi.makeQuizAi(6, "Новый Завет", prev_questions)
+    print(quiz)
 
-    bible_verse = await BibleChatAi.getDailyVerse()
-
-    print(bible_verse)
+    # bible_verse = await BibleChatAi.getDailyVerse()
+    #
+    # print(bible_verse)
 
     # bot_output = BibleChatAi.askBibleChat("""Если я использую chatgpt в проектах, то будет ли это честно?""", [], "Артем")
     # print(bot_output)

@@ -40,6 +40,7 @@ services:
       - "443:443"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./app/dist:/usr/share/nginx/html:ro  # 👈 Vue dist монтируем сюда
       - /etc/letsencrypt:/etc/letsencrypt:ro 
     depends_on:
       - main_app
