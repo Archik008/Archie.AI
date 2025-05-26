@@ -39,9 +39,9 @@ services:
       - "80:80"
       - "443:443"
     volumes:
+      - ./app/dist:/usr/share/nginx/html:ro  # 👈 вот это важно
       - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
-      - ./app/dist:/usr/share/nginx/html:ro  # 👈 Vue dist монтируем сюда
-      - /etc/letsencrypt:/etc/letsencrypt:ro 
+      - /etc/letsencrypt:/etc/letsencrypt:ro
     depends_on:
       - main_app
       - admin
