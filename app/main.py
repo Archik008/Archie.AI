@@ -17,9 +17,10 @@ from database.dao import *
 from fastapi.middleware.cors import CORSMiddleware
 
 from starlette.requests import Request
-from fastapi.staticfiles import StaticFiles
 
-from configure.pyconfig import ADMINS_LIST, URL, PROJ_LOG_TOKEN
+from configure.pyconfig import URL, PROJ_LOG_TOKEN
+
+from mimetypes import guess_type
 
 import logfire
 
@@ -38,18 +39,41 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-logfire.instrument_fastapi(app, capture_headers=True)
-class StaticFilesWithoutCaching(StaticFiles):
-    def is_not_modified(self, *args, **kwargs) -> bool:
-        return super().is_not_modified(*args, **kwargs) and False
-
 app.include_router(router)
+logfire.instrument_fastapi(app, capture_headers=True)
 
-frontend_dist = os.path.join(os.path.dirname(__file__), 'dist')
+FRONTEND_DIST = os.path.abspath(os.path.join(os.path.dirname(__file__), "dist"))
 
-app.mount("/assets", StaticFiles(directory=os.path.join(frontend_dist, 'assets')), name="assets")
-app.mount("/css", StaticFilesWithoutCaching(directory=os.path.join(frontend_dist, 'css')), name="css")
-app.mount("/js", StaticFilesWithoutCaching(directory=os.path.join(frontend_dist, 'js')), name="js")
+# Безопасный путь (на всякий случай)
+def safe_join(base: str, *paths: str) -> str:
+    final_path = os.path.abspath(os.path.join(base, *paths))
+    if not final_path.startswith(base):
+        raise HTTPException(status_code=403, detail="Access Denied")
+    return final_path
+
+@app.get("/static/{file_path:path}")
+async def serve_static(file_path: str):
+    try:
+        file_full_path = safe_join(FRONTEND_DIST, file_path)
+        if not os.path.isfile(file_full_path):
+            raise HTTPException(status_code=404, detail="Static file not found")
+
+        mime_type, _ = guess_type(file_full_path)
+        return FileResponse(file_full_path, media_type=mime_type or "application/octet-stream")
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/{full_path:path}")
+async def serve_spa(full_path: str, request: Request):
+    """
+    Любой маршрут (в том числе SPA-маршруты как /quiz/44) → отдаем index.html
+    """
+    index_path = safe_join(FRONTEND_DIST, "index.html")
+    if not os.path.isfile(index_path):
+        raise HTTPException(status_code=500, detail="index.html not found")
+    return FileResponse(index_path, media_type="text/html")
 
 @app.exception_handler(InfoUserException)
 async def wrap_info_user_exc(request, exc: InfoUserException):
@@ -65,10 +89,6 @@ async def webhook(request: Request, db: AsyncSession = Depends(get_db)) -> None:
         await DAOModel.subscribe_db(user_id, db)
     update = Update.model_validate(new_update_msg, context={"bot": bot})
     await dp.feed_update(bot, update)
-    
-@app.get("/{full_path:path}")
-async def serve_vue_router(full_path: str):
-    return FileResponse(os.path.join(frontend_dist, "index.html"))
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
