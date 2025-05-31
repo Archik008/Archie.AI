@@ -18,7 +18,7 @@ PASSWORD = "jkbsfb123t78fd312iuf3h2187"
 
 BANNED_USERS = [7413826637, 7507257106]
 
-NGROK_URL = "https://3de2-37-32-73-239.ngrok-free.app"
+NGROK_URL = "https://9607-45-130-7-239.ngrok-free.app"
 
 MODE = "PROD"
 

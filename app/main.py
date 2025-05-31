@@ -62,6 +62,8 @@ async def serve_static(file_path: str):
         return FileResponse(file_full_path, media_type=mime_type or "application/octet-stream")
 
     except Exception as e:
+        if file_path == "favicon.ico":
+            raise  HTTPException(status_code=404, detail="Icon not found")
         raise HTTPException(status_code=500, detail=str(e))
 
 
