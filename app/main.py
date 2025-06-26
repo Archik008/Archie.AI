@@ -44,6 +44,12 @@ logfire.instrument_fastapi(app, capture_headers=True)
 
 FRONTEND_DIST = os.path.abspath(os.path.join(os.path.dirname(__file__), "dist"))
 
+headers = {
+    "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
+    "Pragma": "no-cache",
+    "Expires": "0"
+}
+
 # Безопасный путь (на всякий случай)
 def safe_join(base: str, *paths: str) -> str:
     final_path = os.path.abspath(os.path.join(base, *paths))
@@ -59,7 +65,7 @@ async def serve_static(file_path: str):
             raise HTTPException(status_code=404, detail="Static file not found")
 
         mime_type, _ = guess_type(file_full_path)
-        return FileResponse(file_full_path, media_type=mime_type or "application/octet-stream")
+        return FileResponse(file_full_path, media_type=mime_type or "application/octet-stream", headers=headers)
 
     except Exception as e:
         if file_path == "favicon.ico":
@@ -75,7 +81,8 @@ async def serve_spa(full_path: str, request: Request):
     index_path = safe_join(FRONTEND_DIST, "index.html")
     if not os.path.isfile(index_path):
         raise HTTPException(status_code=500, detail="index.html not found")
-    return FileResponse(index_path, media_type="text/html")
+
+    return FileResponse(index_path, media_type="text/html", headers=headers)
 
 @app.exception_handler(InfoUserException)
 async def wrap_info_user_exc(request, exc: InfoUserException):
