@@ -267,8 +267,6 @@ async def create_quiz(params: PostQuiz, user: int = Depends(DAOModel.start_verif
         await DAOModel.update_user_attempts(user, db)
         await DAOModel.minus_attempts(user, db)
 
-    print(new_quiz)
-
     return new_quiz
 
 @router.get("/quiz")

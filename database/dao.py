@@ -216,6 +216,8 @@ class DAOModel:
     @staticmethod
     async def minus_attempts(userId, db: AsyncSession):
         attempts = await DAOModel.get_attempts(userId, db)
+        if attempts <= 0:
+            raise HTTPException(403, {"status": "not allowed"})
         attempts -= 1
         await DAOModel.update_attempts_db(userId, attempts, db)
 
