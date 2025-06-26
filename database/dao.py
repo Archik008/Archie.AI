@@ -102,16 +102,6 @@ class DAOModel:
         if cur_date > user.updated_at.date():
             user.attempts = 5
             await db.commit()
-
-    @staticmethod 
-    async def allow_not_premium_using(userId, db: AsyncSession):
-        if userId in WHITE_LIST:
-            return True
-        attempts = await DAOModel.get_attempts(userId, db)
-        premium_user = await DAOModel.is_premium(userId, db)
-        if attempts <= 0 or premium_user:
-            return 
-        return True
     
     @staticmethod
     async def subscribe_db(userId, db: AsyncSession):
@@ -225,9 +215,6 @@ class DAOModel:
 
     @staticmethod
     async def minus_attempts(userId, db: AsyncSession):
-        allowed_using = await DAOModel.allow_not_premium_using(userId, db)
-        if not allowed_using:
-            raise HTTPException(403, {"status": "not allowed"})
         attempts = await DAOModel.get_attempts(userId, db)
         attempts -= 1
         await DAOModel.update_attempts_db(userId, attempts, db)
